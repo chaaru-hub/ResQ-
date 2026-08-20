@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+}
+
+/* Accessibility: Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Custom Scrollbar for sleek tables */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Custom Leaflet Map styling */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.5rem;
+  z-index: 10;
+}
+
+@layer components {
+  /* Badge Utilities */
+  .badge-critical {
+    @apply bg-red-100 text-red-700 border border-red-200 font-semibold px-2.5 py-0.5 rounded text-xs inline-flex items-center gap-1;
+  }
+
+  .badge-high {
+    @apply bg-orange-100 text-orange-700 border border-orange-200 font-semibold px-2.5 py-0.5 rounded text-xs inline-flex items-center gap-1;
+  }
+
+  .badge-medium {
+    @apply bg-amber-100 text-amber-800 border border-amber-200 font-semibold px-2.5 py-0.5 rounded text-xs inline-flex items-center gap-1;
+  }
+
+  .badge-low {
+    @apply bg-emerald-100 text-emerald-700 border border-emerald-200 font-semibold px-2.5 py-0.5 rounded text-xs inline-flex items-center gap-1;
+  }
+
+  /* Card Container with smooth hover transition */
+  .cmd-card {
+    @apply bg-white border border-slate-200 rounded-lg shadow-sm p-5 transition-all duration-200 hover:border-slate-300 hover:-translate-y-0.5 hover:shadow-md;
+  }
+
+  /* Primary Button with subtle elevation & scale hover effect */
+  .btn-primary {
+    @apply bg-slate-800 hover:bg-slate-900 text-white font-medium px-4 py-2 rounded-md shadow-sm transition-all duration-150 text-sm inline-flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:scale-[1.01] active:translate-y-0 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Secondary Button */
+  .btn-secondary {
+    @apply bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-4 py-2 rounded-md border border-slate-300 transition-all duration-150 text-sm inline-flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:scale-[1.01] active:translate-y-0 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Accent Button */
+  .btn-accent {
+    @apply bg-blue-700 hover:bg-blue-800 text-white font-medium px-4 py-2 rounded-md shadow-sm transition-all duration-150 text-sm inline-flex items-center justify-center gap-2 hover:-translate-y-0.5 hover:scale-[1.01] active:translate-y-0 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Table Utilities */
+  .cmd-table {
+    @apply min-w-full divide-y divide-slate-200 text-left text-xs;
+  }
+  .cmd-table th {
+    @apply bg-slate-100 text-slate-600 font-semibold uppercase tracking-wider px-4 py-3 border-b border-slate-200;
+  }
+  .cmd-table td {
+    @apply px-4 py-3 text-slate-700 border-b border-slate-100 whitespace-nowrap;
+  }
+  .cmd-table tr {
+    @apply transition-colors duration-150;
+  }
+  .cmd-table tr:hover td {
+    @apply bg-slate-50;
+  }
+
+  /* Inputs */
+  .cmd-input {
+    @apply bg-white border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400 w-full transition-all;
+  }
+  .cmd-label {
+    @apply block text-xs font-semibold uppercase text-slate-600 mb-1;
+  }
+}
