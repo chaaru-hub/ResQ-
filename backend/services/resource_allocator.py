@@ -79,13 +79,13 @@ def recommend_resources_greedy(report: Dict[str, Any]) -> Dict[str, Any]:
 
 def process_report_verification(report: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Verifies a WhatsApp disaster report and feeds it into the core resource allocation pipeline.
+    Verifies an SMS disaster report and feeds it into the core resource allocation pipeline.
     Executes Greedy Resource Matching and Dijkstra Route Optimization.
     """
-    area_id = f"a_wa_{uuid.uuid4().hex[:6]}"
+    area_id = f"a_sms_{uuid.uuid4().hex[:6]}"
     area_name = report.get("location") or "Unspecified Location"
     if not area_name.startswith("Area"):
-        area_name = f"Area WA - {area_name}"
+        area_name = f"Area SMS - {area_name}"
 
     lat = report.get("latitude") or 12.9229
     lng = report.get("longitude") or 80.1275
@@ -114,7 +114,7 @@ def process_report_verification(report: Dict[str, Any]) -> Dict[str, Any]:
         "medicine_required": recommendation["required_quantities"]["medical_kits"],
         "priority_score": p_score,
         "status": "Verified",
-        "source": "WhatsApp Report"
+        "source": "SMS Report"
     }
 
     db_store.affected_areas.insert(0, new_area)

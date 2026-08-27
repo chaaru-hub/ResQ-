@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { StatCard } from '../components/StatCard';
 import { PriorityBadge } from '../components/PriorityBadge';
 import { DisasterReportCard } from '../components/DisasterReportCard';
+import { IncidentTable } from '../components/IncidentTable';
 import { StaggerContainer, StaggerItem } from '../components/PageContainer';
 import { api } from '../services/api';
 import { 
@@ -71,7 +72,38 @@ export const DashboardPage = ({ setActiveTab }) => {
     const interval = setInterval(() => {
       fetchData(false);
     }, 3000);
-    return () => clearInterval(interval);
+
+    // WebSocket connection for instant zero-refresh real-time updates
+    let ws = null;
+    try {
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsHost = window.location.hostname || 'localhost';
+      const wsUrl = `${wsProtocol}//${wsHost}:8000/ws`;
+
+      ws = new WebSocket(wsUrl);
+
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.event === 'NEW_CITIZEN_REPORT' || msg.event === 'NEW_REPORT') {
+            fetchData(false);
+          }
+        } catch (e) {
+          // ignore invalid json
+        }
+      };
+
+      ws.onerror = () => {};
+    } catch (e) {
+      // WS fallback
+    }
+
+    return () => {
+      clearInterval(interval);
+      if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+        ws.close();
+      }
+    };
   }, []);
 
   const handleVerifyReport = async (id) => {
@@ -106,7 +138,7 @@ export const DashboardPage = ({ setActiveTab }) => {
     if (!simMessage.trim()) return;
     setSubmitting(true);
     try {
-      await api.simulateWhatsAppReport({
+      await api.sendIncomingSMS({
         message: simMessage,
         reporter_phone: simPhone
       });
@@ -169,7 +201,7 @@ export const DashboardPage = ({ setActiveTab }) => {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-extrabold tracking-tight text-white">RESQ Emergency Command & Control Center</h2>
-              <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded font-mono font-bold">Twilio WhatsApp Ingestion Active</span>
+              <span className="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-mono font-bold">Emergency Ingestion Active</span>
             </div>
             <p className="text-xs text-slate-300 mt-0.5">
               Natural language disaster parsing, Priority Queue scoring (0-100), Greedy resource allocation & Dijkstra route optimization.
@@ -178,14 +210,6 @@ export const DashboardPage = ({ setActiveTab }) => {
         </div>
         
         <div className="flex items-center gap-2.5">
-          <button 
-            onClick={() => setModalOpen(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-md shadow-md transition-all flex items-center gap-2 cursor-pointer"
-          >
-            <Sparkles className="w-4 h-4 text-emerald-200 animate-spin" />
-            <span>Simulate WhatsApp Emergency</span>
-          </button>
-
           <button 
             onClick={() => setActiveTab('allocation')}
             className="btn-accent px-4 py-2.5 text-xs font-bold shadow-md whitespace-nowrap cursor-pointer flex items-center gap-1.5"
@@ -201,9 +225,9 @@ export const DashboardPage = ({ setActiveTab }) => {
           <StatCard 
             title="Total Incidents" 
             value={summary.total_incidents} 
-            icon={MessageSquare} 
-            subtitle="WhatsApp Stream" 
-            onClick={() => setActiveTab('whatsapp')}
+            icon={FileText} 
+            subtitle="Live Incident Stream" 
+            onClick={() => setActiveTab('disasters')}
           />
         </StaggerItem>
         <StaggerItem>
@@ -213,7 +237,7 @@ export const DashboardPage = ({ setActiveTab }) => {
             icon={AlertTriangle} 
             alert={true}
             subtitle="Priority Score >= 81"
-            onClick={() => setActiveTab('whatsapp')}
+            onClick={() => setActiveTab('disasters')}
           />
         </StaggerItem>
         <StaggerItem>
@@ -222,7 +246,7 @@ export const DashboardPage = ({ setActiveTab }) => {
             value={summary.active_incidents} 
             icon={Flame} 
             subtitle="Needs Action"
-            onClick={() => setActiveTab('whatsapp')}
+            onClick={() => setActiveTab('disasters')}
           />
         </StaggerItem>
         <StaggerItem>
@@ -231,7 +255,7 @@ export const DashboardPage = ({ setActiveTab }) => {
             value={summary.resolved_incidents} 
             icon={CheckCircle2} 
             subtitle="Completed"
-            onClick={() => setActiveTab('whatsapp')}
+            onClick={() => setActiveTab('disasters')}
           />
         </StaggerItem>
         <StaggerItem>
@@ -266,24 +290,24 @@ export const DashboardPage = ({ setActiveTab }) => {
       {/* ADMIN EMERGENCY INCIDENT REGISTRY TABLE */}
       <IncidentTable reports={reports} onRefresh={() => fetchData(false)} />
 
-      {/* TWO COLUMN LAYOUT: LIVE WHATSAPP FEED & MAP QUICK VIEW */}
+      {/* TWO COLUMN LAYOUT: LIVE INCIDENT FEED & MAP QUICK VIEW */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         
-        {/* LEFT 2 COLUMNS: LIVE WHATSAPP INCIDENT FEED WITH ANIMATIONS */}
+        {/* LEFT 2 COLUMNS: LIVE EMERGENCY INCIDENT FEED WITH ANIMATIONS */}
         <div className="lg:col-span-2 space-y-3">
           <div className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200 shadow-xs">
             <div className="flex items-center gap-2">
               <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-600"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
               </span>
-              <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-tight">🚨 Live WhatsApp Emergency Incident Feed</h3>
+              <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-tight">🚨 Live Emergency Incident Feed</h3>
             </div>
             <button 
-              onClick={() => setActiveTab('whatsapp')}
+              onClick={() => setActiveTab('disasters')}
               className="text-xs text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 cursor-pointer"
             >
-              View Full Reports Center <ArrowRight className="w-3.5 h-3.5" />
+              View All Disasters <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
@@ -311,14 +335,8 @@ export const DashboardPage = ({ setActiveTab }) => {
 
             {reports.length === 0 && (
               <div className="cmd-card p-10 text-center text-slate-500 space-y-2">
-                <MessageSquare className="w-8 h-8 text-slate-300 mx-auto" />
-                <p className="text-xs font-bold text-slate-700">No active WhatsApp emergency reports in feed.</p>
-                <button 
-                  onClick={() => setModalOpen(true)} 
-                  className="btn-primary text-xs mx-auto mt-2"
-                >
-                  Simulate WhatsApp Emergency
-                </button>
+                <FileText className="w-8 h-8 text-slate-300 mx-auto" />
+                <p className="text-xs font-bold text-slate-700">No active emergency reports in feed.</p>
               </div>
             )}
           </div>
@@ -369,83 +387,6 @@ export const DashboardPage = ({ setActiveTab }) => {
           </div>
         </div>
 
-      </div>
-
-      {/* DEMO SIMULATION MODAL */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl border border-slate-200 max-w-lg w-full p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2 text-emerald-700">
-                <MessageSquare className="w-5 h-5" />
-                <h3 className="text-base font-bold text-slate-900">Simulate WhatsApp Emergency Message</h3>
-              </div>
-              <button onClick={() => setModalOpen(false)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="bg-emerald-50 border border-emerald-200 p-2.5 rounded text-xs text-emerald-900 space-y-1">
-              <p className="font-bold flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-600" /> Preserved Test Scenario (Prompt Benchmark):
-              </p>
-              <p className="font-mono text-[11px] bg-white p-2 rounded border border-emerald-200 text-slate-800 mt-1">
-                "{TEST_MESSAGE_PRESET.text}"
-              </p>
-            </div>
-
-            <form onSubmit={handleSimulateSubmit} className="space-y-4 text-xs">
-              <div>
-                <label className="cmd-label">Reporter WhatsApp Phone</label>
-                <input 
-                  type="text"
-                  value={simPhone}
-                  onChange={(e) => setSimPhone(e.target.value)}
-                  className="cmd-input"
-                  placeholder="+91 98401 23456"
-                />
-              </div>
-
-              <div>
-                <label className="cmd-label">Natural-Language Emergency Message</label>
-                <textarea 
-                  required
-                  rows={4}
-                  value={simMessage}
-                  onChange={(e) => setSimMessage(e.target.value)}
-                  placeholder="e.g. Flood near Tambaram railway station. 8 people trapped..."
-                  className="cmd-input font-mono text-xs"
-                />
-              </div>
-
-              <div className="bg-slate-50 p-2.5 rounded border border-slate-200 text-[11px] text-slate-600 space-y-1">
-                <p className="font-bold text-slate-800">Complete Pipeline Execution Flow:</p>
-                <p>1. <strong>NLP Parser</strong> extracts: Flood, Tambaram Railway Station, 8 People, Critical, Rescue/Medical.</p>
-                <p>2. <strong>Priority Engine</strong> calculates score ~91 (Critical) & enqueues into Priority Queue.</p>
-                <p>3. Appears live in <strong>Admin Control Portal Feed</strong> for verification.</p>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
-                <button 
-                  type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="btn-secondary text-xs cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit"
-                  disabled={submitting}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>{submitting ? 'Processing Pipeline...' : 'Send WhatsApp Message'}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
+      </div>    </div>
   );
 };

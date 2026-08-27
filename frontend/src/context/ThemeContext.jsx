@@ -4,8 +4,12 @@ const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
-    const saved = localStorage.getItem('resq_theme');
-    return saved ? saved : 'light';
+    try {
+      const saved = localStorage.getItem('resq_theme');
+      return (saved && saved !== 'undefined') ? saved : 'light';
+    } catch (e) {
+      return 'light';
+    }
   });
 
   useEffect(() => {

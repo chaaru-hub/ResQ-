@@ -26,7 +26,8 @@ import {
   ChevronDown,
   ChevronUp,
   Sliders,
-  Navigation
+  Navigation,
+  FileText
 } from 'lucide-react';
 
 export const DisasterReportCard = ({ report, onVerify, onReject, onUpdateStatus }) => {
@@ -121,7 +122,11 @@ export const DisasterReportCard = ({ report, onVerify, onReject, onUpdateStatus 
               </h3>
               <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                WhatsApp Source
+                <span>{report.disaster_type || 'Disaster Incident'}</span>
+              </span>
+              <span className="bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                Citizen Report
               </span>
             </div>
             <p className="text-[11px] text-slate-500 flex items-center gap-2 mt-0.5">
@@ -158,13 +163,13 @@ export const DisasterReportCard = ({ report, onVerify, onReject, onUpdateStatus 
         </div>
       </div>
 
-      {/* 2. WhatsApp Message Speech Bubble */}
+      {/* 2. Emergency Message Speech Bubble */}
       <div className="bg-slate-900 text-slate-100 p-3.5 rounded-lg border border-slate-800 shadow-inner relative overflow-hidden font-mono text-xs leading-relaxed">
         <div className="flex items-center justify-between text-[10px] font-sans font-bold text-slate-400 uppercase tracking-wider mb-1.5 pb-1 border-b border-slate-800/80">
-          <span className="flex items-center gap-1 text-emerald-400">
-            <MessageSquare className="w-3 h-3 text-emerald-400" /> Raw WhatsApp Transmission
+          <span className="flex items-center gap-1 text-blue-400">
+            <FileText className="w-3 h-3 text-blue-400" /> Raw Incident Transmission
           </span>
-          <span className="text-slate-500">{report.reporter_phone || 'WhatsApp Direct'}</span>
+          <span className="text-slate-500">{report.reporter_phone || 'Citizen Direct'}</span>
         </div>
         <p className="text-slate-100 text-xs font-mono select-text">
           "{report.original_message}"
@@ -174,9 +179,9 @@ export const DisasterReportCard = ({ report, onVerify, onReject, onUpdateStatus 
       {/* 3. Media Photo Attachment if available */}
       {report.media_url && (
         <div className="bg-slate-900 p-2.5 rounded-lg border border-slate-800 flex items-center gap-3">
-          <img src={report.media_url} alt="WhatsApp Photo Attachment" className="w-20 h-20 object-cover rounded-md border border-slate-700 flex-shrink-0" />
+          <img src={report.media_url} alt="Photo Attachment" className="w-20 h-20 object-cover rounded-md border border-slate-700 flex-shrink-0" />
           <div className="text-xs text-slate-300">
-            <p className="font-bold flex items-center gap-1 text-emerald-400">
+            <p className="font-bold flex items-center gap-1 text-blue-400">
               <ImageIcon className="w-4 h-4" /> Photo Evidence Attached
             </p>
             <p className="text-[11px] text-slate-400 mt-1">Direct camera capture from victim's phone.</p>

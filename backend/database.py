@@ -288,65 +288,8 @@ INITIAL_ALERTS = [
     {"id": "alt4", "title": "Flash Flood Wave Approaching", "message": "Hydrological telemetry indicates a 1.2m surge wave reaching Riverbed Township within 3 hours.", "severity": "Critical", "status": "Active", "created_at": "2026-08-13T16:10:00Z"}
 ]
 
-INITIAL_REPORTS = [
-    {
-        "id": "rpt_wa_101",
-        "reporter_phone": "+91 98401 23456",
-        "original_message": "Flood in Velachery. Around 200 people are stranded. Water level is increasing. Need food, drinking water and medical assistance.",
-        "disaster_type": "Flood",
-        "location": "Velachery",
-        "latitude": 12.9750,
-        "longitude": 80.2200,
-        "people_affected": 200,
-        "severity": "High",
-        "urgency": "High",
-        "required_resources": ["Food", "Water", "Medical kits"],
-        "priority_score": 78.5,
-        "priority_level": "High",
-        "status": "Pending",
-        "source": "WhatsApp",
-        "created_at": "2026-08-13T18:30:00Z",
-        "updated_at": "2026-08-13T18:30:00Z"
-    },
-    {
-        "id": "rpt_wa_102",
-        "reporter_phone": "+91 94440 98765",
-        "original_message": "Fire outbreak near Guindy industrial zone. 45 factory workers trapped. Smoke spreading fast. Send ambulance and fire rescue team immediately!",
-        "disaster_type": "Fire",
-        "location": "Guindy",
-        "latitude": 13.0067,
-        "longitude": 80.2020,
-        "people_affected": 45,
-        "severity": "Critical",
-        "urgency": "Critical",
-        "required_resources": ["Ambulance", "Rescue vehicle", "Medical kits"],
-        "priority_score": 86.0,
-        "priority_level": "Critical",
-        "status": "Verified",
-        "source": "WhatsApp",
-        "created_at": "2026-08-13T19:15:00Z",
-        "updated_at": "2026-08-13T19:20:00Z"
-    },
-    {
-        "id": "rpt_wa_103",
-        "reporter_phone": "+91 97900 11223",
-        "original_message": "Landslide at Hill Pass Ridge Sector 4. National highway blocked. 120 travelers stranded without drinking water and shelter.",
-        "disaster_type": "Landslide",
-        "location": "Hill Pass Ridge",
-        "latitude": 13.0200,
-        "longitude": 80.1500,
-        "people_affected": 120,
-        "severity": "Medium",
-        "urgency": "High",
-        "required_resources": ["Water", "Shelter", "Food"],
-        "priority_score": 62.5,
-        "priority_level": "High",
-        "status": "Pending",
-        "source": "WhatsApp",
-        "created_at": "2026-08-13T20:05:00Z",
-        "updated_at": "2026-08-13T20:05:00Z"
-    }
-]
+INITIAL_REPORTS = []
+
 
 # Database Access Interface
 class LocalDatabaseStore:

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, Save, Sliders, ShieldCheck, Database, MessageSquare, ToggleLeft, ToggleRight, Server, User } from 'lucide-react';
+import { Settings, Save, Sliders, ShieldCheck, Database, ToggleLeft, ToggleRight, Server, User } from 'lucide-react';
 
 export const SettingsPage = ({ setActiveTab }) => {
   const [weights, setWeights] = useState({
@@ -10,7 +10,6 @@ export const SettingsPage = ({ setActiveTab }) => {
   });
 
   const [demoMode, setDemoMode] = useState(true);
-  const [autoReply, setAutoReply] = useState(true);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   const handleSaveSettings = (e) => {
@@ -24,7 +23,7 @@ export const SettingsPage = ({ setActiveTab }) => {
       {/* Header */}
       <div>
         <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">System Settings & Admin Preferences</h2>
-        <p className="text-xs text-slate-500">Configure factor weights for priority scoring, Twilio WhatsApp connection, and system preferences</p>
+        <p className="text-xs text-slate-500">Configure factor weights for priority scoring and system preferences</p>
       </div>
 
       {savedSuccess && (
@@ -120,6 +119,46 @@ export const SettingsPage = ({ setActiveTab }) => {
         </form>
       </div>
 
+      {/* Map Tile & API Key Configuration Card */}
+      <div className="cmd-card space-y-4">
+        <div className="flex items-center gap-2 pb-3 border-b border-slate-200">
+          <Settings className="w-4 h-4 text-blue-600" />
+          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Geospatial Map Tile Provider & API Key</h3>
+        </div>
+
+        <div className="text-xs space-y-3">
+          <p className="text-slate-500">
+            Configure high-resolution Mapbox, LocationIQ, or custom map tile server credentials for the <strong>Disaster Map</strong> dashboard.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="bg-slate-50 p-3 rounded border border-slate-200 space-y-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Active Map Provider</span>
+              <p className="font-extrabold text-slate-900 capitalize">
+                {localStorage.getItem('resq_map_provider') ? localStorage.getItem('resq_map_provider').replace('_', ' ') : 'CARTO Light (Default)'}
+              </p>
+            </div>
+
+            <div className="bg-slate-50 p-3 rounded border border-slate-200 space-y-1">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">API Key Status</span>
+              <p className="font-bold text-emerald-700">
+                {localStorage.getItem('resq_map_api_key') ? 'Custom API Key Saved' : 'Free Open Maps Active'}
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-2 flex justify-end">
+            <button 
+              type="button" 
+              onClick={() => setActiveTab('map')} 
+              className="btn-secondary text-xs"
+            >
+              Open Interactive Map Key Manager →
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* System Connection Status (No raw secrets displayed) */}
       <div className="cmd-card space-y-3">
         <div className="flex items-center gap-2 pb-3 border-b border-slate-200">
@@ -128,14 +167,6 @@ export const SettingsPage = ({ setActiveTab }) => {
         </div>
         
         <div className="text-xs space-y-2 text-slate-600">
-          <div className="flex justify-between items-center p-2.5 bg-slate-50 rounded border border-slate-200">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-emerald-600" />
-              <span className="font-semibold">Twilio WhatsApp Sandbox Webhook:</span>
-            </div>
-            <span className="font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded text-[11px]">POST /webhooks/whatsapp Active</span>
-          </div>
-
           <div className="flex justify-between items-center p-2.5 bg-slate-50 rounded border border-slate-200">
             <div className="flex items-center gap-2">
               <Database className="w-4 h-4 text-blue-600" />
@@ -150,6 +181,22 @@ export const SettingsPage = ({ setActiveTab }) => {
               <span className="font-semibold">FastAPI Engine (Python 3.11):</span>
             </div>
             <span className="font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded text-[11px]">http://localhost:8000</span>
+          </div>
+
+          <div className="flex justify-between items-center p-2.5 bg-slate-50 rounded border border-slate-200">
+            <div className="flex items-center gap-2">
+              <Server className="w-4 h-4 text-amber-600" />
+              <span className="font-semibold">OpenWeatherMap API v2.5:</span>
+            </div>
+            <span className="font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded text-[11px]">Live & Simulated Fallback Active</span>
+          </div>
+
+          <div className="flex justify-between items-center p-2.5 bg-slate-50 rounded border border-slate-200">
+            <div className="flex items-center gap-2">
+              <Settings className="w-4 h-4 text-cyan-600" />
+              <span className="font-semibold">Disaster Map Tiles API Key:</span>
+            </div>
+            <span className="font-bold text-cyan-800 bg-cyan-100 px-2 py-0.5 rounded text-[11px]">Mapbox / LocationIQ Supported</span>
           </div>
         </div>
       </div>

@@ -44,6 +44,11 @@
   z-index: 10;
 }
 
+.custom-citizen-leaflet-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
 @layer components {
   /* Badge Utilities */
   .badge-critical {

@@ -190,7 +190,7 @@ export const DisastersPage = () => {
                         <Flame className="w-4 h-4 text-red-600 flex-shrink-0" />
                         <div>
                           <p className="font-extrabold">{r.disaster_type || 'Disaster Incident'}</p>
-                          <p className="text-[10px] text-slate-400 font-normal">{r.reporter_phone || 'WhatsApp Source'}</p>
+                          <p className="text-[10px] text-slate-400 font-normal">{r.reporter_phone || 'Citizen Source'}</p>
                         </div>
                       </td>
                       <td className="font-semibold text-slate-700">{r.location}</td>
@@ -359,7 +359,7 @@ export const DisastersPage = () => {
             <div className="p-4 bg-slate-100 rounded-md border border-slate-200 flex justify-between items-start">
               <div>
                 <h3 className="text-sm font-extrabold text-slate-900">{viewingItem.disaster_type || viewingItem.name} at {viewingItem.location}</h3>
-                <p className="text-slate-500 font-mono">Reporter: {viewingItem.reporter_phone || 'WhatsApp'}</p>
+                <p className="text-slate-500 font-mono">Reporter: {viewingItem.reporter_phone || 'Citizen Direct'}</p>
               </div>
               <PriorityBadge level={viewingItem.severity} />
             </div>

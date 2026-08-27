@@ -33,11 +33,19 @@ URGENCY_MAPPING = {
 def calculate_report_priority(
     severity: str, 
     people_affected: int, 
-    urgency: str, 
-    resource_count: int
+    urgency: str = "Medium", 
+    resource_count: int = 1,
+    vulnerable_count: int = 0,
+    medical_cases: int = 0,
+    waiting_time_minutes: float = 0.0
 ) -> Tuple[float, str, Dict[str, float]]:
     """
-    Computes report priority score (0 - 100) and classification label.
+    Computes report priority score (0 - 100) and classification label based on:
+    - Severity (35%)
+    - Population Impact (25%)
+    - Vulnerable Population & Medical Emergencies (20%)
+    - Waiting Time (10%)
+    - Resource Shortage / Urgency (10%)
     """
     # 1. Severity Score (0 - 100)
     sev_score = SEVERITY_MAPPING.get(severity, 50.0)
@@ -45,24 +53,34 @@ def calculate_report_priority(
     # 2. Population Score (0 - 100)
     pop = float(max(0, people_affected))
     if severity == "Critical" or urgency == "Critical":
-        # Trapped victims in critical emergencies scale up faster
         pop_score = max(60.0, min(100.0, (pop / 20.0) * 100.0)) if pop > 0 else 40.0
     else:
         pop_score = min(100.0, (pop / 50.0) * 100.0) if pop > 0 else 20.0
 
-    # 3. Urgency Score (0 - 100)
-    urg_score = URGENCY_MAPPING.get(urgency, 50.0)
+    # 3. Vulnerable & Medical Factor (0 - 100)
+    vuln = float(max(0, vulnerable_count))
+    med = float(max(0, medical_cases))
+    if pop > 0:
+        vuln_med_ratio = min(1.0, (vuln + med * 2.0) / pop)
+        vuln_med_score = vuln_med_ratio * 100.0
+    else:
+        vuln_med_score = min(100.0, (vuln + med * 2.0) * 15.0)
 
-    # 4. Resource Shortage Score (0 - 100)
-    # Each required resource type adds 33.3 points, capped at 100
+    # 4. Waiting Time Score (0 - 100): +1 point per 5 minutes waiting, capped at 100
+    wait_score = min(100.0, (waiting_time_minutes / 5.0) * 10.0)
+
+    # 5. Urgency / Resource Shortage Score (0 - 100)
+    urg_score = URGENCY_MAPPING.get(urgency, 50.0)
     res_score = min(100.0, float(resource_count) * 33.3) if resource_count > 0 else 20.0
+    urg_res_score = (urg_score * 0.5) + (res_score * 0.5)
 
     # Weighted Sum Formula
     raw_score = (
-        0.40 * sev_score +
+        0.35 * sev_score +
         0.25 * pop_score +
-        0.20 * urg_score +
-        0.15 * res_score
+        0.20 * vuln_med_score +
+        0.10 * wait_score +
+        0.10 * urg_res_score
     )
 
     priority_score = round(max(0.0, min(100.0, raw_score)), 1)
@@ -78,10 +96,11 @@ def calculate_report_priority(
         priority_level = "Low"
 
     breakdown = {
-        "severity_component": round(0.40 * sev_score, 1),
+        "severity_component": round(0.35 * sev_score, 1),
         "population_component": round(0.25 * pop_score, 1),
-        "urgency_component": round(0.20 * urg_score, 1),
-        "resource_component": round(0.15 * res_score, 1)
+        "vulnerable_medical_component": round(0.20 * vuln_med_score, 1),
+        "waiting_time_component": round(0.10 * wait_score, 1),
+        "urgency_resource_component": round(0.10 * urg_res_score, 1)
     }
 
     return priority_score, priority_level, breakdown

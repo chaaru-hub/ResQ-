@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS alerts (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 10. DISASTER REPORTS TABLE (WHATSAPP INGESTION)
+-- 10. DISASTER REPORTS TABLE (SMS INGESTION)
 CREATE TABLE IF NOT EXISTS disaster_reports (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     reporter_phone VARCHAR(50),
@@ -142,7 +142,7 @@ CREATE TABLE IF NOT EXISTS disaster_reports (
     priority_score FLOAT DEFAULT 0.0,
     priority_level VARCHAR(50) DEFAULT 'Low', -- 'Critical', 'High', 'Medium', 'Low'
     status VARCHAR(50) DEFAULT 'Pending', -- 'Pending', 'Verified', 'Assigned', 'In Progress', 'Resolved', 'Rejected'
-    source VARCHAR(50) DEFAULT 'WhatsApp',
+    source VARCHAR(50) DEFAULT 'SMS',
     assigned_team_id VARCHAR(255),
     media_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

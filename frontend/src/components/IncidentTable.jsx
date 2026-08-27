@@ -63,7 +63,7 @@ export const IncidentTable = ({ reports = [], onRefresh }) => {
   };
 
   const handleCompleteOperation = async (reportId) => {
-    if (!window.confirm('Mark this incident as Completed and notify reporter via WhatsApp?')) return;
+    if (!window.confirm('Mark this incident as Completed and notify reporter via SMS?')) return;
     setLoading(true);
     try {
       await api.completeDisasterReport(reportId);
@@ -99,7 +99,7 @@ export const IncidentTable = ({ reports = [], onRefresh }) => {
             <span>Emergency Incident Registry Table</span>
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Manage WhatsApp disaster reports, assign response teams, run Dijkstra routing & dispatch automated status updates.
+            Manage disaster reports, assign response teams, run Dijkstra routing & dispatch response updates.
           </p>
         </div>
         <span className="text-xs font-bold font-mono bg-slate-200 text-slate-700 px-2.5 py-1 rounded-md">
@@ -167,7 +167,7 @@ export const IncidentTable = ({ reports = [], onRefresh }) => {
                           <button
                             onClick={() => handleOpenAssignModal(rpt)}
                             className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[11px] px-2.5 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
-                            title="Assign Rescue Team & Trigger WhatsApp Notification"
+                            title="Assign Rescue Team to Emergency"
                           >
                             <Users className="w-3 h-3" /> Assign Team
                           </button>
@@ -177,7 +177,7 @@ export const IncidentTable = ({ reports = [], onRefresh }) => {
                           <button
                             onClick={() => handleCompleteOperation(rpt.id)}
                             className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] px-2.5 py-1 rounded transition-colors flex items-center gap-1 cursor-pointer"
-                            title="Mark Operation Completed & Send WhatsApp Notification"
+                            title="Mark Operation Completed"
                           >
                             <CheckCircle2 className="w-3 h-3" /> Complete
                           </button>
@@ -219,7 +219,7 @@ export const IncidentTable = ({ reports = [], onRefresh }) => {
             <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-xs space-y-1 text-blue-900">
               <p className="font-extrabold text-blue-900">Target Incident:</p>
               <p>{selectedReport.disaster_type} at <strong>{selectedReport.location}</strong></p>
-              <p className="text-[11px] text-blue-700">Reporter: {selectedReport.reporter_phone}</p>
+              <p className="text-[11px] text-blue-700">Reporter Phone: {selectedReport.reporter_phone}</p>
             </div>
 
             <form onSubmit={handleAssignTeamSubmit} className="space-y-4 text-xs">
@@ -244,7 +244,7 @@ export const IncidentTable = ({ reports = [], onRefresh }) => {
                 </p>
                 <p>1. Status updated to <strong>In Progress</strong>.</p>
                 <p>2. <strong>Dijkstra algorithm</strong> computes shortest dispatch route from Central Depot.</p>
-                <p>3. Automatic Twilio WhatsApp notification sent to <strong>{selectedReport.reporter_phone}</strong>.</p>
+                <p>3. Automatic dispatch status update assigned to team.</p>
               </div>
 
               <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
@@ -261,7 +261,7 @@ export const IncidentTable = ({ reports = [], onRefresh }) => {
                   className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <Users className="w-3.5 h-3.5" />
-                  <span>{loading ? 'Assigning & Notifying...' : 'Assign Team & Send WhatsApp Update'}</span>
+                  <span>{loading ? 'Assigning Team...' : 'Assign Team & Dispatch'}</span>
                 </button>
               </div>
             </form>

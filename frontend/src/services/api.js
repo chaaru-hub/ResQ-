@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
@@ -63,7 +63,17 @@ export const api = {
   createAlert: (data) => request('/api/alerts', { method: 'POST', body: JSON.stringify(data) }),
   dismissAlert: (id) => request(`/api/alerts/${id}`, { method: 'PUT' }),
 
-  // WhatsApp Disaster Reports
+  // SMS Disaster Reports & Endpoints
+  sendIncomingSMS: (data) => request('/sms/incoming', { method: 'POST', body: JSON.stringify(data) }),
+  simulateSMSReport: (data) => request('/sms/incoming', { method: 'POST', body: JSON.stringify(data) }),
+  getReports: (status = null, severity = null) => {
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    if (severity) params.append('severity', severity);
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return request(`/reports${query}`);
+  },
+  getReportById: (id) => request(`/reports/${id}`),
   getDisasterReports: (status = null, severity = null) => {
     const params = new URLSearchParams();
     if (status) params.append('status', status);
@@ -72,10 +82,31 @@ export const api = {
     return request(`/api/disaster-reports${query}`);
   },
   getDisasterReportById: (id) => request(`/api/disaster-reports/${id}`),
+  getPriorityRanking: () => request('/priority-ranking'),
   updateDisasterReportStatus: (id, data) => request(`/api/disaster-reports/${id}/status`, { method: 'PATCH', body: JSON.stringify(data) }),
   verifyDisasterReport: (id) => request(`/api/disaster-reports/${id}/verify`, { method: 'POST' }),
   assignTeamToReport: (id, data) => request(`/api/disaster-reports/${id}/assign`, { method: 'POST', body: JSON.stringify(data) }),
   completeDisasterReport: (id) => request(`/api/disaster-reports/${id}/complete`, { method: 'POST' }),
-  simulateWhatsAppReport: (data) => request('/api/disaster-reports/simulate', { method: 'POST', body: JSON.stringify(data) }),
+  simulateWhatsAppReport: (data) => request('/sms/incoming', { method: 'POST', body: JSON.stringify(data) }),
+
+  // OpenWeather API Integration
+  getWeatherStatus: () => request('/api/weather/status'),
+  getWeatherCurrent: (lat = 13.0827, lon = 80.2707, location = '') => {
+    const params = new URLSearchParams({ lat, lon });
+    if (location) params.append('location', location);
+    return request(`/api/weather/current?${params.toString()}`);
+  },
+  getWeatherForecast: (lat = 13.0827, lon = 80.2707, location = '') => {
+    const params = new URLSearchParams({ lat, lon });
+    if (location) params.append('location', location);
+    return request(`/api/weather/forecast?${params.toString()}`);
+  },
+  getAreaWeather: (areaId) => request(`/api/weather/area/${areaId}`),
+  getWeatherOverview: () => request('/api/weather/overview'),
+  configureWeatherKey: (apiKey) => request('/api/weather/config', { method: 'POST', body: JSON.stringify({ api_key: apiKey }) }),
+
+  // Citizen Portal API Endpoints
+  submitCitizenReport: (data) => request('/api/citizen/report', { method: 'POST', body: JSON.stringify(data) }),
+  getCitizenReportById: (id) => request(`/api/citizen/report/${id}`),
 };
 

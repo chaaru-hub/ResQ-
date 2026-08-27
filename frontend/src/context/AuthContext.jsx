@@ -22,8 +22,13 @@ export const DEFAULT_COORDINATOR_USER = {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('resq_user');
-    return saved ? JSON.parse(saved) : DEFAULT_ADMIN_USER;
+    try {
+      const saved = localStorage.getItem('resq_user');
+      return (saved && saved !== 'undefined') ? JSON.parse(saved) : DEFAULT_ADMIN_USER;
+    } catch (e) {
+      console.warn('Error reading resq_user from localStorage:', e);
+      return DEFAULT_ADMIN_USER;
+    }
   });
 
   const login = (email, password, selectedRole = 'admin') => {

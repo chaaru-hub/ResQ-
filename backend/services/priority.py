@@ -69,8 +69,12 @@ def calculate_priority_score(area: Dict[str, Any], custom_weights: Dict[str, flo
         vuln_factor = min(1.0, vulnerable / 2000.0)
     vuln_score = vuln_factor * weights["vulnerability_max"]
     
+    # 6. OpenWeather Hazard Risk Multiplier (Optional boost based on severe weather)
+    weather_risk = float(area.get("weather_risk_score", area.get("weather_risk", 0.0)))
+    weather_boost = round((weather_risk / 100.0) * 5.0, 1) # up to 5 points priority boost for extreme weather
+    
     # Total Score (0 - 100)
-    total_score = round(sev_score + pop_score + med_score + shortage_score + vuln_score, 1)
+    total_score = round(sev_score + pop_score + med_score + shortage_score + vuln_score + weather_boost, 1)
     total_score = max(0.0, min(100.0, total_score))
     
     # Classification
@@ -91,6 +95,7 @@ def calculate_priority_score(area: Dict[str, Any], custom_weights: Dict[str, flo
             "population_score": round(pop_score, 1),
             "medical_score": round(med_score, 1),
             "shortage_score": round(shortage_score, 1),
-            "vulnerability_score": round(vuln_score, 1)
+            "vulnerability_score": round(vuln_score, 1),
+            "weather_boost": weather_boost
         }
     }

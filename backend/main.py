@@ -22,16 +22,42 @@ app = FastAPI(
 # Enable CORS for React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8000"
+    ],
+    allow_origin_regex=r"http://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include WhatsApp & Disaster Reports APIRouters
-from routes import whatsapp, disaster_reports
-app.include_router(whatsapp.router)
+# Include Disaster Reports, SMS, OpenWeather, & Citizen Reports APIRouters
+from routes import disaster_reports, weather, sms, citizen_reports
+from fastapi import WebSocket, WebSocketDisconnect
+from services.websocket_manager import ws_manager
+
 app.include_router(disaster_reports.router)
+app.include_router(sms.router)
+app.include_router(weather.router)
+app.include_router(citizen_reports.router)
+
+# WebSocket Endpoint for real-time live admin synchronization
+@app.websocket("/ws")
+@app.websocket("/api/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await ws_manager.connect(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        ws_manager.disconnect(websocket)
+    except Exception:
+        ws_manager.disconnect(websocket)
+
 
 # -----------------------------------------------------------------------------
 # PYDANTIC SCHEMAS

@@ -20,10 +20,12 @@ import {
   Search, 
   ChevronRight,
   ShieldCheck,
+  ShieldAlert,
   UserCheck,
   PanelLeftClose,
   PanelLeftOpen,
-  MessageSquare
+  MessageSquare,
+  CloudSun
 } from 'lucide-react';
 
 export const MainLayout = ({ activeTab, setActiveTab, children }) => {
@@ -34,7 +36,9 @@ export const MainLayout = ({ activeTab, setActiveTab, children }) => {
 
   const navigation = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'whatsapp', label: 'WhatsApp Reports', icon: MessageSquare, highlight: true },
+    { id: 'citizen-reports', label: 'Citizen Reports', icon: ShieldAlert, highlight: true },
+    { id: 'weather', label: 'OpenWeather Insights', icon: CloudSun, highlight: true },
+    { id: 'sms', label: 'SMS Disaster Reports', icon: MessageSquare, highlight: true },
     { id: 'disasters', label: 'Disaster Management', icon: Flame },
     { id: 'resources', label: 'Resource Management', icon: Boxes },
     { id: 'allocation', label: 'Allocation Center', icon: Cpu, highlight: true },
@@ -46,7 +50,9 @@ export const MainLayout = ({ activeTab, setActiveTab, children }) => {
 
   const pageTitleMap = {
     dashboard: 'Disaster Command Center Dashboard',
-    whatsapp: 'WhatsApp Emergency Disaster Reporting Center',
+    'citizen-reports': 'Citizen Emergency Ingestion & Priority Management',
+    weather: 'OpenWeather Emergency Intelligence Center',
+    sms: 'SMS Disaster Ingestion & Emergency Reporting Hub',
     disasters: 'Disaster Incident & Event Management',
     resources: 'Emergency Resource & Inventory Management',
     allocation: 'Smart Resource Allocation & Priority Optimization',

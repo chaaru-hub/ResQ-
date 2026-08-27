@@ -1,7 +1,7 @@
 """
 Disaster Reports API Router
 Manages disaster report list, retrieval, status updates, admin verification, rescue team assignment, and incident completion.
-Triggers automated Twilio WhatsApp notifications for emergency receipts and real-time status updates.
+Triggers automated Twilio SMS notifications for emergency receipts and real-time status updates.
 """
 
 import uuid
@@ -10,11 +10,12 @@ from typing import Dict, Any, Optional, List
 from fastapi import APIRouter, HTTPException, Body, Query
 
 from database import db_store, supabase_client
-from services.whatsapp_service import process_incoming_whatsapp_message
+from services.sms_service import process_incoming_sms
 from services.priority_engine import calculate_report_priority
-from services.resource_allocator import process_report_verification
+from services.resource_allocator import process_report_verification, recommend_resources_greedy
 from services.route_optimizer import calculate_dijkstra_route
 from services.twilio_service import send_status_update
+from services.optimizer import run_optimization
 
 router = APIRouter(prefix="/api/disaster-reports", tags=["Disaster Reports"])
 
@@ -48,12 +49,12 @@ def get_disaster_report_by_id(report_id: str):
 
 
 @router.post("/simulate")
-def simulate_whatsapp_report(payload: Dict[str, Any] = Body(...)):
+def simulate_sms_report(payload: Dict[str, Any] = Body(...)):
     """
     Demo / Development Mode Endpoint:
-    Processes natural language WhatsApp messages through the EXACT SAME pipeline as live Twilio webhooks.
+    Processes natural language SMS messages through the EXACT SAME pipeline as live Twilio webhooks.
     """
-    res = process_incoming_whatsapp_message(payload, source="WhatsApp (Simulated)")
+    res = process_incoming_sms(payload, source="SMS (Simulated)")
     return res
 
 
@@ -128,6 +129,7 @@ def verify_disaster_report(report_id: str):
             db_store.disaster_reports[idx] = r
             
             allocation_res = process_report_verification(r)
+            optimization_res = run_optimization(db_store.affected_areas, db_store.resources)
 
             if supabase_client:
                 try:
@@ -137,9 +139,10 @@ def verify_disaster_report(report_id: str):
 
             return {
                 "status": "success",
-                "message": "Report verified. Greedy resource recommendations generated and Dijkstra route calculated.",
+                "message": "Report verified. Greedy resource recommendations generated, PuLP ILP optimization solved, and Dijkstra route calculated.",
                 "report": r,
-                "allocation_pipeline": allocation_res
+                "allocation_pipeline": allocation_res,
+                "optimization": optimization_res
             }
 
     raise HTTPException(status_code=404, detail="Disaster report not found.")
@@ -226,3 +229,27 @@ def complete_disaster_report(report_id: str):
             }
 
     raise HTTPException(status_code=404, detail="Disaster report not found.")
+
+
+@router.delete("/clear-all")
+@router.delete("/clear")
+def clear_fake_reports():
+    """Clears all mock/fake disaster reports from the system."""
+    db_store.disaster_reports = []
+    return {"status": "success", "message": "All mock disaster reports cleared successfully."}
+
+
+@router.delete("/{report_id}")
+def delete_disaster_report(report_id: str):
+    """Deletes a single disaster report by ID."""
+    initial_len = len(db_store.disaster_reports)
+    db_store.disaster_reports = [r for r in db_store.disaster_reports if r.get("id") != report_id and r.get("incident_id") != report_id]
+    if len(db_store.disaster_reports) < initial_len:
+        if supabase_client:
+            try:
+                supabase_client.table("disaster_reports").delete().eq("id", report_id).execute()
+            except Exception as e:
+                print(f"Supabase delete error: {e}")
+        return {"status": "success", "message": f"Report '{report_id}' deleted successfully."}
+    raise HTTPException(status_code=404, detail="Disaster report not found.")
+
