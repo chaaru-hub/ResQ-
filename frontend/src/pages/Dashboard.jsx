@@ -111,7 +111,7 @@ export const DashboardPage = ({ setActiveTab }) => {
       await api.verifyDisasterReport(id);
       fetchData();
     } catch (err) {
-      alert('Verification failed: ' + err.message);
+      console.error('Verification failed:', err.message);
     }
   };
 
@@ -120,7 +120,7 @@ export const DashboardPage = ({ setActiveTab }) => {
       await api.updateDisasterReportStatus(id, { status: 'Rejected' });
       fetchData();
     } catch (err) {
-      alert('Rejection failed: ' + err.message);
+      console.error('Rejection failed:', err.message);
     }
   };
 
@@ -129,7 +129,7 @@ export const DashboardPage = ({ setActiveTab }) => {
       await api.updateDisasterReportStatus(id, data);
       fetchData();
     } catch (err) {
-      alert('Status update failed: ' + err.message);
+      console.error('Status update failed:', err.message);
     }
   };
 
@@ -145,7 +145,7 @@ export const DashboardPage = ({ setActiveTab }) => {
       setModalOpen(false);
       fetchData();
     } catch (err) {
-      alert('Simulation error: ' + err.message);
+      console.error('Simulation error:', err.message);
     } finally {
       setSubmitting(false);
     }

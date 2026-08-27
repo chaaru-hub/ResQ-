@@ -51,7 +51,7 @@ export const InventoryPage = () => {
       setModalOpen(false);
       loadAllData();
     } catch (err) {
-      alert('Failed to add resource: ' + err.message);
+      console.error('Failed to add resource:', err.message);
     }
   };
 

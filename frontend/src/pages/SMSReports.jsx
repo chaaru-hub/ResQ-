@@ -99,7 +99,7 @@ export const SMSReportsPage = () => {
         setLastAckResult(null);
       }, 2500);
     } catch (err) {
-      alert("Error sending SMS simulation: " + err.message);
+      console.error("Error sending SMS simulation:", err.message);
     } finally {
       setSendingSMS(false);
     }
@@ -110,7 +110,7 @@ export const SMSReportsPage = () => {
       await api.verifyDisasterReport(id);
       fetchSMSData();
     } catch (err) {
-      alert("Verification error: " + err.message);
+      console.error("Verification error:", err.message);
     }
   };
 
@@ -119,7 +119,7 @@ export const SMSReportsPage = () => {
       await api.updateDisasterReportStatus(id, { status: "Rejected" });
       fetchSMSData();
     } catch (err) {
-      alert("Rejection error: " + err.message);
+      console.error("Rejection error:", err.message);
     }
   };
 
@@ -128,7 +128,7 @@ export const SMSReportsPage = () => {
       await api.updateDisasterReportStatus(id, data);
       fetchSMSData();
     } catch (err) {
-      alert("Update error: " + err.message);
+      console.error("Update error:", err.message);
     }
   };
 

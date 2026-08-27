@@ -64,7 +64,7 @@ export const VehiclesPage = () => {
       setModalOpen(false);
       fetchData();
     } catch (err) {
-      alert('Error registering vehicle: ' + err.message);
+      console.error('Error registering vehicle:', err.message);
     }
   };
 

@@ -36,7 +36,7 @@ export const AlertsPage = () => {
       await api.dismissAlert(id);
       fetchAlerts();
     } catch (err) {
-      alert('Failed to resolve alert: ' + err.message);
+      console.error('Failed to resolve alert:', err.message);
     }
   };
 
@@ -50,7 +50,7 @@ export const AlertsPage = () => {
       setModalOpen(false);
       fetchAlerts();
     } catch (err) {
-      alert('Failed to create alert: ' + err.message);
+      console.error('Failed to create alert:', err.message);
     } finally {
       setSubmitting(false);
     }

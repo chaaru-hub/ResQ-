@@ -84,7 +84,7 @@ export const CitizenReportsPage = ({ setActiveTab }) => {
       await api.verifyDisasterReport(id);
       fetchReports();
     } catch (err) {
-      alert('Verification error: ' + err.message);
+      console.error('Verification error:', err.message);
     }
   };
 
@@ -93,7 +93,7 @@ export const CitizenReportsPage = ({ setActiveTab }) => {
       await api.updateDisasterReportStatus(id, { status: 'Rejected' });
       fetchReports();
     } catch (err) {
-      alert('Rejection error: ' + err.message);
+      console.error('Rejection error:', err.message);
     }
   };
 
@@ -102,7 +102,7 @@ export const CitizenReportsPage = ({ setActiveTab }) => {
       await api.updateDisasterReportStatus(id, data);
       fetchReports();
     } catch (err) {
-      alert('Update error: ' + err.message);
+      console.error('Update error:', err.message);
     }
   };
 

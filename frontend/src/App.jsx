@@ -9,7 +9,6 @@ import { InventoryPage } from './pages/Inventory';
 import { AllocationPage } from './pages/Allocation';
 import { RescueTeamsPage } from './pages/RescueTeams';
 import { DisasterMapPage } from './pages/DisasterMap';
-import { AlertsPage } from './pages/Alerts';
 import { WeatherInsightsPage } from './pages/WeatherInsights';
 import { SMSReportsPage } from './pages/SMSReports';
 import { SettingsPage } from './pages/Settings';
@@ -68,8 +67,6 @@ const MainApp = () => {
         return <RescueTeamsPage />;
       case 'map':
         return <DisasterMapPage />;
-      case 'alerts':
-        return <AlertsPage />;
       case 'settings':
         return <SettingsPage setActiveTab={setActiveTab} />;
       default:

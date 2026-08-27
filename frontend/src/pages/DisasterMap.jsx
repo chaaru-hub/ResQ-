@@ -235,7 +235,7 @@ export const DisasterMapPage = () => {
       setEditingReport(null);
       loadMapData();
     } catch (err) {
-      alert('Error updating location coordinates: ' + err.message);
+      console.error('Error updating location coordinates:', err.message);
     } finally {
       setSubmittingCoord(false);
     }

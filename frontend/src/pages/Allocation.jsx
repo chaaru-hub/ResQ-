@@ -81,7 +81,7 @@ export const AllocationPage = () => {
     } catch (err) {
       clearInterval(stepInterval);
       setLoading(false);
-      alert('Error solving optimization model: ' + err.message);
+      console.error('Error solving optimization model:', err.message);
     }
   };
 
@@ -93,7 +93,7 @@ export const AllocationPage = () => {
       setConfirmedSuccess(true);
       loadStoredAllocations();
     } catch (err) {
-      alert('Failed to confirm allocation: ' + err.message);
+      console.error('Failed to confirm allocation:', err.message);
     } finally {
       setConfirming(false);
     }

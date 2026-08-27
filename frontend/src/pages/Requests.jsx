@@ -56,7 +56,7 @@ export const RequestsPage = () => {
       setModalOpen(false);
       fetchData();
     } catch (err) {
-      alert('Failed to log emergency request: ' + err.message);
+      console.error('Failed to log emergency request:', err.message);
     }
   };
 
@@ -65,7 +65,7 @@ export const RequestsPage = () => {
       await api.updateRequestStatus(id, newStatus);
       fetchData();
     } catch (err) {
-      alert('Failed to update request: ' + err.message);
+      console.error('Failed to update request:', err.message);
     }
   };
 

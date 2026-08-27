@@ -94,18 +94,16 @@ export const AreasPage = () => {
       setModalOpen(false);
       fetchData();
     } catch (err) {
-      alert('Error saving area: ' + err.message);
+      console.error('Error saving area:', err.message);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this affected area record?')) {
-      try {
-        await api.deleteArea(id);
-        fetchData();
-      } catch (err) {
-        alert('Error deleting area: ' + err.message);
-      }
+    try {
+      await api.deleteArea(id);
+      fetchData();
+    } catch (err) {
+      console.error('Error deleting area:', err.message);
     }
   };
 

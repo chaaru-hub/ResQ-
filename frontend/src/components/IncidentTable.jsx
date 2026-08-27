@@ -56,20 +56,19 @@ export const IncidentTable = ({ reports = [], onRefresh }) => {
       setAssignModalOpen(false);
       if (onRefresh) onRefresh();
     } catch (err) {
-      alert('Assign team error: ' + err.message);
+      console.error('Assign team error:', err.message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleCompleteOperation = async (reportId) => {
-    if (!window.confirm('Mark this incident as Completed and notify reporter via SMS?')) return;
     setLoading(true);
     try {
       await api.completeDisasterReport(reportId);
       if (onRefresh) onRefresh();
     } catch (err) {
-      alert('Completion error: ' + err.message);
+      console.error('Completion error:', err.message);
     } finally {
       setLoading(false);
     }

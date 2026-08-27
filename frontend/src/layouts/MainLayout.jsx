@@ -44,7 +44,6 @@ export const MainLayout = ({ activeTab, setActiveTab, children }) => {
     { id: 'allocation', label: 'Allocation Center', icon: Cpu, highlight: true },
     { id: 'teams', label: 'Rescue Teams', icon: Users2 },
     { id: 'map', label: 'Disaster Map', icon: MapIcon },
-    { id: 'alerts', label: 'Alerts', icon: Bell },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -58,7 +57,6 @@ export const MainLayout = ({ activeTab, setActiveTab, children }) => {
     allocation: 'Smart Resource Allocation & Priority Optimization',
     teams: 'Rescue Teams & Search Squad Deployment',
     map: 'Interactive Tactical Disaster Map',
-    alerts: 'System Critical & Emergency Warning Alerts',
     settings: 'System Configuration & Admin Preferences'
   };
 

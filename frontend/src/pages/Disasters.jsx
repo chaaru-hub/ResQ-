@@ -55,7 +55,7 @@ export const DisastersPage = () => {
       await api.verifyDisasterReport(id);
       loadData();
     } catch (err) {
-      alert('Verification failed: ' + err.message);
+      console.error('Verification failed:', err.message);
     }
   };
 
@@ -64,7 +64,7 @@ export const DisastersPage = () => {
       await api.updateDisasterReportStatus(id, { status: newStatus });
       loadData();
     } catch (err) {
-      alert('Status update failed: ' + err.message);
+      console.error('Status update failed:', err.message);
     }
   };
 
@@ -107,18 +107,16 @@ export const DisastersPage = () => {
       setModalOpen(false);
       loadData();
     } catch (err) {
-      alert('Failed to save disaster record: ' + err.message);
+      console.error('Failed to save disaster record:', err.message);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this disaster incident?')) {
-      try {
-        await api.deleteDisaster(id);
-        loadData();
-      } catch (err) {
-        alert('Failed to delete disaster: ' + err.message);
-      }
+    try {
+      await api.deleteDisaster(id);
+      loadData();
+    } catch (err) {
+      console.error('Failed to delete disaster:', err.message);
     }
   };
 

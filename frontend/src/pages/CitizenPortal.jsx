@@ -177,7 +177,7 @@ export const CitizenPortal = () => {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image size must be less than 5MB.');
+      setSubmitError('Image size must be less than 5MB.');
       return;
     }
 

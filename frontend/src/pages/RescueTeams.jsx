@@ -59,7 +59,7 @@ export const RescueTeamsPage = () => {
       setModalOpen(false);
       fetchData();
     } catch (err) {
-      alert('Error creating rescue team: ' + err.message);
+      console.error('Error creating rescue team:', err.message);
     }
   };
 
@@ -71,7 +71,7 @@ export const RescueTeamsPage = () => {
       });
       fetchData();
     } catch (err) {
-      alert('Status update error: ' + err.message);
+      console.error('Status update error:', err.message);
     }
   };
 
