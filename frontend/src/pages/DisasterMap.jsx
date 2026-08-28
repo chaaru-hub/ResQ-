@@ -186,7 +186,7 @@ export const DisasterMapPage = () => {
   const [severityFilter, setSeverityFilter] = useState('All'); // 'All', 'Critical', 'High', 'Medium', 'Low'
 
   // Map API Key & Provider Configuration State (TomTom Primary)
-  const [mapApiKey, setMapApiKey] = useState(() => localStorage.getItem('resq_map_api_key') || '');
+  const [mapApiKey, setMapApiKey] = useState(() => localStorage.getItem('resq_map_api_key') || import.meta.env.VITE_TOMTOM_API_KEY || 'F3i5RbHWV823ODFUaOzNDJ5zP6QJRVzM');
   const [mapProvider, setMapProvider] = useState(() => localStorage.getItem('resq_map_provider') || 'tomtom_main');
   const [customTileUrl, setCustomTileUrl] = useState(() => localStorage.getItem('resq_custom_tile_url') || '');
   const [showKeyModal, setShowKeyModal] = useState(false);
@@ -282,12 +282,8 @@ export const DisasterMapPage = () => {
     }
     let url = selectedProvider.url;
     if (selectedProvider.requiresKey) {
-      const activeKey = mapApiKey || import.meta.env.VITE_TOMTOM_API_KEY || import.meta.env.VITE_MAP_API_KEY;
-      if (!activeKey && selectedProvider.id.startsWith('tomtom')) {
-        // Fallback seamlessly to free open tile map if TomTom API key is not entered yet
-        return 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-      }
-      url = url.replace('{key}', activeKey || 'demo_key');
+      const activeKey = mapApiKey || import.meta.env.VITE_TOMTOM_API_KEY || import.meta.env.VITE_MAP_API_KEY || 'F3i5RbHWV823ODFUaOzNDJ5zP6QJRVzM';
+      url = url.replace('{key}', activeKey);
     }
     return url;
   };
