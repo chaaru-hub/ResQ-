@@ -187,10 +187,41 @@ export const DisasterMapPage = () => {
 
   // Map API Key & Provider Configuration State (TomTom Primary)
   const [mapApiKey, setMapApiKey] = useState(() => localStorage.getItem('resq_map_api_key') || import.meta.env.VITE_TOMTOM_API_KEY || 'F3i5RbHWV823ODFUaOzNDJ5zP6QJRVzM');
-  const [mapProvider, setMapProvider] = useState(() => localStorage.getItem('resq_map_provider') || 'tomtom_main');
+  const [mapProvider, setMapProvider] = useState(() => {
+    const saved = localStorage.getItem('resq_map_provider');
+    if (!saved || saved.startsWith('carto')) return 'tomtom_main';
+    return saved;
+  });
   const [customTileUrl, setCustomTileUrl] = useState(() => localStorage.getItem('resq_custom_tile_url') || '');
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [keySavedNotice, setKeySavedNotice] = useState(false);
+
+  // Calculate spatial offset for overlapping markers in the same location/region
+  const getReportCoordinates = (rpt, allReports) => {
+    const baseLat = rpt.latitude || 12.9229;
+    const baseLng = rpt.longitude || 80.1275;
+
+    // Find all reports matching this exact base coordinate
+    const overlapping = allReports.filter(r => 
+      Math.abs((r.latitude || 12.9229) - baseLat) < 0.0005 &&
+      Math.abs((r.longitude || 80.1275) - baseLng) < 0.0005
+    );
+
+    if (overlapping.length <= 1) {
+      return [baseLat, baseLng];
+    }
+
+    const index = overlapping.findIndex(r => r.id === rpt.id);
+    if (index <= 0) return [baseLat, baseLng];
+
+    // Offset in a small circle (~350m radius) so all markers render distinctly side-by-side
+    const angle = (index * 2 * Math.PI) / overlapping.length;
+    const radius = 0.0035;
+    return [
+      baseLat + radius * Math.cos(angle),
+      baseLng + radius * Math.sin(angle)
+    ];
+  };
 
   // Manual Coordinate Editing Modal State
   const [editingReport, setEditingReport] = useState(null);
@@ -654,8 +685,7 @@ export const DisasterMapPage = () => {
 
           {/* DISASTER REPORTS (CITIZEN SPECIAL MARKERS VS REGULAR CIRCLE MARKERS) */}
           {filteredReports.map((rpt) => {
-            const lat = rpt.latitude || 12.9229;
-            const lng = rpt.longitude || 80.1275;
+            const [lat, lng] = getReportCoordinates(rpt, filteredReports);
             const citizenFlag = isCitizenReport(rpt);
 
             if (citizenFlag) {
