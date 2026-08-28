@@ -105,8 +105,19 @@ export const api = {
   getWeatherOverview: () => request('/api/weather/overview'),
   configureWeatherKey: (apiKey) => request('/api/weather/config', { method: 'POST', body: JSON.stringify({ api_key: apiKey }) }),
 
-  // Citizen Portal API Endpoints
+  // Citizen Portal
   submitCitizenReport: (data) => request('/api/citizen/report', { method: 'POST', body: JSON.stringify(data) }),
-  getCitizenReportById: (id) => request(`/api/citizen/report/${id}`),
-};
+  getCitizenReportStatus: (id) => request(`/api/citizen/report/${id}`),
 
+  // Safe Locations & Emergency Facilities
+  getSafeLocations: (lat = null, lng = null, disaster_type = '') => {
+    const params = new URLSearchParams();
+    if (lat !== null && lng !== null) {
+      params.append('lat', lat);
+      params.append('lng', lng);
+    }
+    if (disaster_type) params.append('disaster_type', disaster_type);
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return request(`/api/safe-locations${query}`);
+  }
+};

@@ -483,6 +483,24 @@ def get_analytics():
 def get_alerts():
     return {"status": "success", "data": db_store.alerts}
 
+@app.get("/api/safe-locations")
+def get_safe_locations(
+    lat: Optional[float] = Query(None),
+    lng: Optional[float] = Query(None),
+    disaster_type: Optional[str] = Query(""),
+    limit: Optional[int] = Query(6)
+):
+    """
+    Returns safe locations (Hospitals, Relief Shelters, Fire/Police hubs).
+    If GPS coordinates (lat, lng) are provided, ranks nearest facilities with distance & evacuation times.
+    """
+    from services.safe_locations_finder import find_nearest_safe_locations
+    if lat is not None and lng is not None:
+        ranked = find_nearest_safe_locations(lat, lng, disaster_type=disaster_type, limit=limit)
+        return {"status": "success", "count": len(ranked), "data": ranked}
+    
+    return {"status": "success", "count": len(db_store.safe_locations), "data": db_store.safe_locations}
+
 @app.post("/api/alerts")
 def create_alert(payload: Dict[str, Any] = Body(...)):
     new_alt = payload

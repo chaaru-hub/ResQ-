@@ -16,7 +16,7 @@ from services.priority_engine import calculate_report_priority
 from services.resource_allocator import recommend_resources_greedy
 from services.route_optimizer import calculate_dijkstra_route
 from services.optimizer import run_optimization
-from services.websocket_manager import ws_manager
+from services.safe_locations_finder import find_nearest_safe_locations
 
 router = APIRouter(prefix="/api/citizen", tags=["Citizen Portal Reports"])
 
@@ -85,6 +85,9 @@ async def submit_citizen_report(report_data: CitizenReportSchema):
     central_depot = (13.0827, 80.2707)
     dijkstra_route = calculate_dijkstra_route(central_depot, (lat, lng))
 
+    # 3b. Calculate Nearest Safe Locations (Hospitals, Relief Shelters, Fire/Police hubs)
+    nearest_safe = find_nearest_safe_locations(lat, lng, disaster_type=payload["disaster_type"], limit=5)
+
     # 4. Create / Update affected area demand entry for Smart Resource Allocation
     area_id = f"area_cit_{uuid.uuid4().hex[:6]}"
     new_area = {
@@ -139,6 +142,7 @@ async def submit_citizen_report(report_data: CitizenReportSchema):
         "priority_breakdown": breakdown,
         "greedy_recommendation": greedy_rec,
         "dijkstra_route": dijkstra_route,
+        "nearest_safe_locations": nearest_safe,
         "assigned_team_name": matched_team.get("team_name"),
         "assigned_vehicle_name": matched_vehicle.get("vehicle_id") or matched_vehicle.get("type"),
         "optimization_summary": {

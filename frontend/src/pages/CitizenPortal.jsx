@@ -850,6 +850,42 @@ export const CitizenPortal = () => {
                     </div>
                   </div>
 
+                  {/* NEAREST SAFE HOSPITALS & EVACUATION SHELTERS CARD FOR CITIZENS */}
+                  {liveReportStatus?.nearest_safe_locations?.length > 0 && (
+                    <div className="bg-gradient-to-br from-emerald-950/60 to-slate-950 border border-emerald-500/40 p-4 rounded-xl space-y-3 shadow-lg">
+                      <div className="flex items-center justify-between border-b border-emerald-900/50 pb-2">
+                        <span className="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                          <Building2 className="w-4 h-4 text-emerald-400" /> Nearest Safe Hospitals & Evacuation Shelters
+                        </span>
+                        <span className="bg-emerald-900/80 text-emerald-300 border border-emerald-700/60 text-[9.5px] font-black px-2 py-0.5 rounded-full uppercase">
+                          Safe Evacuation Active
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {liveReportStatus.nearest_safe_locations.slice(0, 4).map((loc) => (
+                          <div key={loc.id} className="bg-slate-950/90 border border-slate-800 p-3 rounded-lg space-y-1.5 hover:border-emerald-500/50 transition-colors">
+                            <div className="flex justify-between items-start">
+                              <span className="font-extrabold text-white text-xs flex items-center gap-1.5">
+                                {loc.facility_type === 'Hospital' ? '🏥' : (loc.facility_type === 'Relief Shelter' ? '🎪' : '🚒')} {loc.name}
+                              </span>
+                              <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-black px-1.5 py-0.5 rounded border border-emerald-500/30">
+                                {loc.distance_km} km • {loc.estimated_time_mins} mins
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-slate-400">{loc.address}</p>
+                            <div className="flex justify-between items-center text-[10px] pt-1 border-t border-slate-900">
+                              <span className="text-emerald-400 font-bold">{loc.capacity || loc.status}</span>
+                              <a href={`tel:${loc.phone}`} className="text-blue-400 hover:underline font-mono font-bold flex items-center gap-1">
+                                📞 {loc.phone}
+                              </a>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div>
                     <span className="text-[10px] text-slate-500 uppercase font-bold block mb-1">Emergency Location</span>
                     <p className="text-slate-300 font-medium">{liveReportStatus?.location}</p>

@@ -290,6 +290,165 @@ INITIAL_ALERTS = [
 
 INITIAL_REPORTS = []
 
+INITIAL_SAFE_LOCATIONS = [
+    # Hospitals & Trauma Centers
+    {
+        "id": "loc_h1",
+        "name": "Apollo Emergency & Trauma Hospital",
+        "facility_type": "Hospital",
+        "icon": "hospital",
+        "latitude": 13.0604,
+        "longitude": 80.2496,
+        "address": "21 Greams Lane, Thousand Lights",
+        "phone": "+91 44 2829 0200",
+        "capacity": "250 Emergency Beds",
+        "icu_available": 35,
+        "status": "Operational 24/7"
+    },
+    {
+        "id": "loc_h2",
+        "name": "Government General Hospital & ICU Hub",
+        "facility_type": "Hospital",
+        "icon": "hospital",
+        "latitude": 13.0815,
+        "longitude": 80.2777,
+        "address": "EVR Periyar Salai, Park Town",
+        "phone": "+91 44 2530 5000",
+        "capacity": "500 Emergency Beds",
+        "icu_available": 60,
+        "status": "Operational 24/7"
+    },
+    {
+        "id": "loc_h3",
+        "name": "Tambaram District Trauma & Surgical Center",
+        "facility_type": "Hospital",
+        "icon": "hospital",
+        "latitude": 12.9240,
+        "longitude": 80.1290,
+        "address": "GST Road, Tambaram Sanatorium",
+        "phone": "+91 44 2241 8000",
+        "capacity": "180 Emergency Beds",
+        "icu_available": 20,
+        "status": "Operational 24/7"
+    },
+    {
+        "id": "loc_h4",
+        "name": "Stanley Medical Apex Trauma Care",
+        "facility_type": "Hospital",
+        "icon": "hospital",
+        "latitude": 13.1030,
+        "longitude": 80.2870,
+        "address": "Old Jail Road, Royapuram",
+        "phone": "+91 44 2528 1351",
+        "capacity": "320 Emergency Beds",
+        "icu_available": 40,
+        "status": "Operational 24/7"
+    },
+    {
+        "id": "loc_h5",
+        "name": "Chromepet Emergency Medical Base",
+        "facility_type": "Hospital",
+        "icon": "hospital",
+        "latitude": 12.9510,
+        "longitude": 80.1410,
+        "address": "Station Road, Chromepet",
+        "phone": "+91 44 2265 1122",
+        "capacity": "120 Emergency Beds",
+        "icu_available": 15,
+        "status": "Operational 24/7"
+    },
+    # Relief Shelters & Evacuation Centers
+    {
+        "id": "loc_s1",
+        "name": "Tambaram Indoor Stadium Relief Shelter",
+        "facility_type": "Relief Shelter",
+        "icon": "shelter",
+        "latitude": 12.9200,
+        "longitude": 80.1250,
+        "address": "Gandhi Road, West Tambaram",
+        "phone": "1800-425-1088",
+        "capacity": "1,500 Evacuees",
+        "food_water_status": "Abundant Supplies",
+        "status": "Active Safe Zone"
+    },
+    {
+        "id": "loc_s2",
+        "name": "Central Community Disaster Shelter",
+        "facility_type": "Relief Shelter",
+        "icon": "shelter",
+        "latitude": 13.0850,
+        "longitude": 80.2650,
+        "address": "Ripon Building Complex, Central",
+        "phone": "1800-425-1089",
+        "capacity": "3,000 Evacuees",
+        "food_water_status": "Abundant Supplies",
+        "status": "Active Safe Zone"
+    },
+    {
+        "id": "loc_s3",
+        "name": "North Harbor Coastal Evacuation Base",
+        "facility_type": "Relief Shelter",
+        "icon": "shelter",
+        "latitude": 13.1250,
+        "longitude": 80.2950,
+        "address": "Harbor High School Grounds",
+        "phone": "1800-425-1090",
+        "capacity": "2,000 Evacuees",
+        "food_water_status": "Stocked",
+        "status": "Active Safe Zone"
+    },
+    {
+        "id": "loc_s4",
+        "name": "Western Basin Disaster Relief Camp",
+        "facility_type": "Relief Shelter",
+        "icon": "shelter",
+        "latitude": 13.0550,
+        "longitude": 80.1750,
+        "address": "Punamallee High Road Assembly Hub",
+        "phone": "1800-425-1091",
+        "capacity": "1,200 Evacuees",
+        "food_water_status": "Stocked",
+        "status": "Active Safe Zone"
+    },
+    # Fire & Police First Responder Bases
+    {
+        "id": "loc_f1",
+        "name": "Tambaram Fire & Heavy Rescue Station",
+        "facility_type": "Fire Station",
+        "icon": "fire",
+        "latitude": 12.9260,
+        "longitude": 80.1310,
+        "address": "GST Road, Tambaram East",
+        "phone": "101",
+        "capacity": "6 Rescue Engines",
+        "status": "High Alert"
+    },
+    {
+        "id": "loc_f2",
+        "name": "Central Heavy Fire & Hazmat Station",
+        "facility_type": "Fire Station",
+        "icon": "fire",
+        "latitude": 13.0800,
+        "longitude": 80.2720,
+        "address": "High Court Compound, Central",
+        "phone": "101",
+        "capacity": "10 Rescue Engines",
+        "status": "High Alert"
+    },
+    {
+        "id": "loc_p1",
+        "name": "Tambaram Police Command & Evacuation Control",
+        "facility_type": "Police Hub",
+        "icon": "police",
+        "latitude": 12.9210,
+        "longitude": 80.1280,
+        "address": "MUD Complex, Tambaram",
+        "phone": "100",
+        "capacity": "Command Squads Active",
+        "status": "24/7 Command Patrol"
+    }
+]
+
 
 # Database Access Interface
 class LocalDatabaseStore:
@@ -302,6 +461,7 @@ class LocalDatabaseStore:
         self.vehicles = list(INITIAL_VEHICLES)
         self.alerts = list(INITIAL_ALERTS)
         self.disaster_reports = list(INITIAL_REPORTS)
+        self.safe_locations = list(INITIAL_SAFE_LOCATIONS)
         self.allocations = []
 
 db_store = LocalDatabaseStore()

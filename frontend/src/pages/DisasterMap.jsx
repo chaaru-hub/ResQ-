@@ -34,6 +34,7 @@ import {
   Lock,
   Shield,
   Phone,
+  Building2,
   Image as ImageIcon
 } from 'lucide-react';
 
@@ -170,10 +171,40 @@ const createCitizenMarkerIcon = (rpt) => {
   });
 };
 
+// Helper to create high-visibility map icons for Safe Facilities & Evacuation Hubs
+const createSafeLocationIcon = (loc) => {
+  const isHospital = loc.facility_type === 'Hospital';
+  const isShelter = loc.facility_type === 'Relief Shelter';
+  const isFire = loc.facility_type === 'Fire Station';
+  const iconEmoji = isHospital ? '🏥' : (isShelter ? '🎪' : (isFire ? '🚒' : '🚓'));
+  const badgeColor = isHospital ? 'from-emerald-600 to-teal-700 border-emerald-300' : (isShelter ? 'from-cyan-600 to-blue-700 border-cyan-300' : 'from-orange-600 to-red-700 border-orange-300');
+
+  const htmlString = `
+    <div class="relative flex items-center justify-center group cursor-pointer" style="width: 36px; height: 36px;">
+      <span class="animate-pulse absolute inline-flex h-8 w-8 rounded-full bg-emerald-400/30"></span>
+      <div class="relative w-8 h-8 rounded-full bg-gradient-to-br ${badgeColor} border-2 text-white shadow-xl flex items-center justify-center text-sm font-bold">
+        ${iconEmoji}
+      </div>
+      <div class="absolute -bottom-4 bg-slate-950 text-emerald-300 border border-emerald-500/60 text-[8px] font-black px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap">
+        ${loc.name.split(' ')[0]}
+      </div>
+    </div>
+  `;
+
+  return L.divIcon({
+    className: 'custom-safe-location-icon',
+    html: htmlString,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    popupAnchor: [0, -18]
+  });
+};
+
 export const DisasterMapPage = () => {
   const [areas, setAreas] = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [reports, setReports] = useState([]);
+  const [safeLocations, setSafeLocations] = useState([]);
   const [weatherMap, setWeatherMap] = useState({});
   const [weatherOverview, setWeatherOverview] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -182,6 +213,7 @@ export const DisasterMapPage = () => {
   const [showDangerZones, setShowDangerZones] = useState(true);
   const [showWeatherOverlay, setShowWeatherOverlay] = useState(true);
   const [showRoutes, setShowRoutes] = useState(true);
+  const [showSafeLocations, setShowSafeLocations] = useState(true);
   const [showCitizenOnly, setShowCitizenOnly] = useState(false);
   const [severityFilter, setSeverityFilter] = useState('All'); // 'All', 'Critical', 'High', 'Medium', 'Low'
 
@@ -223,6 +255,36 @@ export const DisasterMapPage = () => {
     ];
   };
 
+  // Calculate nearest safe locations (Hospitals, Relief Shelters) for an incident
+  const getNearestSafeLocationsForReport = (lat, lng, disasterType = '') => {
+    if (!safeLocations || safeLocations.length === 0) return [];
+    const R = 6371;
+    const dTypeLower = (disasterType || '').toLowerCase();
+    const isMedicalOrBuilding = ['building', 'collapse', 'medical', 'injury', 'fire', 'explosion', 'trauma', 'accident'].some(k => dTypeLower.includes(k));
+
+    const list = safeLocations.map(loc => {
+      const locLat = loc.latitude || 13.0827;
+      const locLng = loc.longitude || 80.2707;
+      const dLat = (locLat - lat) * Math.PI / 180;
+      const dLon = (locLng - lng) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat * Math.PI / 180) * Math.cos(locLat * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      const distKm = Math.round(R * c * 100) / 100;
+      const estMins = Math.max(1, Math.round((distKm / 30) * 60));
+      
+      let sortWeight = distKm;
+      if (isMedicalOrBuilding && (loc.facility_type === 'Hospital' || loc.facility_type === 'Fire Station')) {
+        sortWeight -= 0.6;
+      }
+      return { ...loc, distance_km: distKm, estimated_time_mins: estMins, _sortWeight: sortWeight };
+    });
+
+    list.sort((a, b) => a._sortWeight - b._sortWeight);
+    return list.slice(0, 4);
+  };
+
   // Manual Coordinate Editing Modal State
   const [editingReport, setEditingReport] = useState(null);
   const [latInput, setLatInput] = useState('');
@@ -235,15 +297,17 @@ export const DisasterMapPage = () => {
   const loadMapData = async (showLoading = false) => {
     if (showLoading) setLoading(true);
     try {
-      const [areasRes, vehRes, rptRes, weatherRes] = await Promise.all([
+      const [areasRes, vehRes, rptRes, weatherRes, safeLocsRes] = await Promise.all([
         api.getAreas(),
         api.getVehicles(),
         api.getDisasterReports(),
-        api.getWeatherOverview().catch(() => null)
+        api.getWeatherOverview().catch(() => null),
+        api.getSafeLocations().catch(() => null)
       ]);
       setAreas(areasRes.data || []);
       setVehicles(vehRes.data || []);
       setReports(rptRes.data || []);
+      setSafeLocations(safeLocsRes?.data || []);
       setWeatherOverview(weatherRes);
       
       if (weatherRes && weatherRes.areas_weather) {
@@ -481,6 +545,15 @@ export const DisasterMapPage = () => {
           </button>
 
           <button
+            onClick={() => setShowSafeLocations(!showSafeLocations)}
+            className={`px-2.5 py-1 rounded-md border text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              showSafeLocations ? 'bg-emerald-50 border-emerald-300 text-emerald-900 shadow-xs font-black' : 'bg-slate-50 border-slate-200 text-slate-400'
+            }`}
+          >
+            <Building2 className="w-3.5 h-3.5 text-emerald-600" /> Safe Hospitals & Shelters ({safeLocations.length})
+          </button>
+
+          <button
             onClick={() => setShowCitizenOnly(!showCitizenOnly)}
             className={`px-2.5 py-1 rounded-md border text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               showCitizenOnly ? 'bg-cyan-100 border-cyan-400 text-cyan-900 shadow-xs font-black' : 'bg-slate-50 border-slate-200 text-slate-500'
@@ -544,6 +617,69 @@ export const DisasterMapPage = () => {
               </div>
             </Popup>
           </CircleMarker>
+
+          {/* SAFE HOSPITALS & EVACUATION SHELTERS MARKERS */}
+          {showSafeLocations && safeLocations.map((loc) => {
+            const locLat = loc.latitude || 13.0827;
+            const locLng = loc.longitude || 80.2707;
+            return (
+              <Marker
+                key={`safe-loc-${loc.id}`}
+                position={[locLat, locLng]}
+                icon={createSafeLocationIcon(loc)}
+              >
+                <Popup>
+                  <div className="p-2 space-y-1.5 max-w-xs text-xs text-slate-900">
+                    <div className="flex items-center gap-1.5 border-b pb-1">
+                      <span className="text-base">{loc.facility_type === 'Hospital' ? '🏥' : (loc.facility_type === 'Relief Shelter' ? '🎪' : '🚒')}</span>
+                      <div>
+                        <h4 className="font-extrabold text-slate-900 text-xs leading-tight">{loc.name}</h4>
+                        <span className="text-[10px] font-bold text-emerald-700 uppercase">{loc.facility_type} • {loc.status}</span>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-slate-600">{loc.address}</p>
+                    <div className="bg-emerald-50 border border-emerald-200 p-1.5 rounded text-[11px] space-y-0.5">
+                      <div className="flex justify-between font-bold text-emerald-900">
+                        <span>Capacity / Beds:</span>
+                        <span>{loc.capacity}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-700">
+                        <span>Emergency Hotline:</span>
+                        <a href={`tel:${loc.phone}`} className="font-mono font-bold text-blue-600 hover:underline">
+                          📞 {loc.phone}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })}
+
+          {/* DYNAMIC PROXIMITY VECTORS: Connect reported disasters to nearest Hospital & Evacuation Shelter */}
+          {showSafeLocations && filteredReports.map((rpt) => {
+            const [lat, lng] = getReportCoordinates(rpt, filteredReports);
+            const nearestFacilities = getNearestSafeLocationsForReport(lat, lng, rpt.disaster_type);
+            const topHospital = nearestFacilities.find(f => f.facility_type === 'Hospital');
+            const topShelter = nearestFacilities.find(f => f.facility_type === 'Relief Shelter');
+
+            return (
+              <React.Fragment key={`prox-group-${rpt.id}`}>
+                {topHospital && (
+                  <Polyline
+                    positions={[[lat, lng], [topHospital.latitude, topHospital.longitude]]}
+                    pathOptions={{ color: '#10b981', weight: 2.5, dashArray: '4, 6', opacity: 0.75 }}
+                  />
+                )}
+                {topShelter && (
+                  <Polyline
+                    positions={[[lat, lng], [topShelter.latitude, topShelter.longitude]]}
+                    pathOptions={{ color: '#06b6d4', weight: 2, dashArray: '3, 5', opacity: 0.65 }}
+                  />
+                )}
+              </React.Fragment>
+            );
+          })}
 
           {/* Render Threat Radius Circles around Affected Areas */}
           {showDangerZones && filteredAreas.map((area) => {
@@ -777,6 +913,34 @@ export const DisasterMapPage = () => {
                           </div>
                         </div>
                       )}
+
+                      {/* NEAREST SAFE HOSPITALS & EVACUATION SHELTERS IN POPUP */}
+                      {(() => {
+                        const nearest = rpt.nearest_safe_locations || getNearestSafeLocationsForReport(lat, lng, rpt.disaster_type);
+                        if (!nearest || nearest.length === 0) return null;
+                        return (
+                          <div className="bg-emerald-50 border border-emerald-300 p-2 rounded-lg space-y-1.5 text-[10.5px]">
+                            <div className="flex items-center justify-between font-black text-emerald-900 border-b border-emerald-200 pb-1">
+                              <span className="flex items-center gap-1">
+                                <Building2 className="w-3.5 h-3.5 text-emerald-600" /> Nearest Safe Facilities:
+                              </span>
+                              <span className="text-[9px] bg-emerald-200 text-emerald-900 px-1.5 py-0.2 rounded uppercase font-black">Safe Evac</span>
+                            </div>
+                            <div className="space-y-1 text-slate-800 font-bold">
+                              {nearest.slice(0, 2).map((loc) => (
+                                <div key={loc.id} className="flex justify-between items-center bg-white p-1 rounded border border-emerald-100">
+                                  <span className="truncate max-w-[160px] text-slate-900 font-extrabold">
+                                    {loc.facility_type === 'Hospital' ? '🏥' : '🎪'} {loc.name}
+                                  </span>
+                                  <span className="text-emerald-700 font-mono text-[9.5px] font-black shrink-0">
+                                    {loc.distance_km} km ({loc.estimated_time_mins}m)
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* Footer Actions */}
                       <div className="pt-2 border-t flex items-center justify-between gap-2">
