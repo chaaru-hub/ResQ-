@@ -123,26 +123,26 @@ export const SettingsPage = ({ setActiveTab }) => {
       <div className="cmd-card space-y-4">
         <div className="flex items-center gap-2 pb-3 border-b border-slate-200">
           <Settings className="w-4 h-4 text-blue-600" />
-          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Geospatial Map Tile Provider & API Key</h3>
+          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">TomTom Maps & Geospatial Tile Engine</h3>
         </div>
 
         <div className="text-xs space-y-3">
           <p className="text-slate-500">
-            Configure high-resolution Mapbox, LocationIQ, or custom map tile server credentials for the <strong>Disaster Map</strong> dashboard.
+            Configure high-resolution <strong>TomTom Maps (Day, Night Tactical, Satellite)</strong>, Mapbox, or custom map tile server credentials for the <strong>Disaster Map</strong> dashboard.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="bg-slate-50 p-3 rounded border border-slate-200 space-y-1">
               <span className="text-[10px] font-bold text-slate-400 uppercase">Active Map Provider</span>
               <p className="font-extrabold text-slate-900 capitalize">
-                {localStorage.getItem('resq_map_provider') ? localStorage.getItem('resq_map_provider').replace('_', ' ') : 'CARTO Light (Default)'}
+                {localStorage.getItem('resq_map_provider') ? localStorage.getItem('resq_map_provider').replace('_', ' ') : 'TomTom Maps Main'}
               </p>
             </div>
 
             <div className="bg-slate-50 p-3 rounded border border-slate-200 space-y-1">
               <span className="text-[10px] font-bold text-slate-400 uppercase">API Key Status</span>
               <p className="font-bold text-emerald-700">
-                {localStorage.getItem('resq_map_api_key') ? 'Custom API Key Saved' : 'Free Open Maps Active'}
+                {localStorage.getItem('resq_map_api_key') ? 'TomTom API Key Configured' : 'TomTom Engine (Auto Fallback)'}
               </p>
             </div>
           </div>
@@ -153,7 +153,7 @@ export const SettingsPage = ({ setActiveTab }) => {
               onClick={() => setActiveTab('map')} 
               className="btn-secondary text-xs"
             >
-              Open Interactive Map Key Manager →
+              Open TomTom Map Key Manager →
             </button>
           </div>
         </div>

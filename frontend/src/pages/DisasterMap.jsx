@@ -37,25 +37,46 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 
-// Tile Provider Configurations & API Key Presets
+// Tile Provider Configurations & API Key Presets (TomTom Maps Primary)
 const MAP_PROVIDERS = [
   {
+    id: 'tomtom_main',
+    name: 'TomTom Maps Main (Standard Day Mode)',
+    url: 'https://api.tomtom.com/map/1/tile/basic/main/{z}/{x}/{y}.png?key={key}',
+    attribution: '&copy; <a href="https://www.tomtom.com">TomTom Maps</a>',
+    requiresKey: true
+  },
+  {
+    id: 'tomtom_night',
+    name: 'TomTom Maps Night (Dark Tactical Mode)',
+    url: 'https://api.tomtom.com/map/1/tile/basic/night/{z}/{x}/{y}.png?key={key}',
+    attribution: '&copy; <a href="https://www.tomtom.com">TomTom Maps</a>',
+    requiresKey: true
+  },
+  {
+    id: 'tomtom_satellite',
+    name: 'TomTom Maps Satellite Imagery',
+    url: 'https://api.tomtom.com/map/1/tile/sat/main/{z}/{x}/{y}.png?key={key}',
+    attribution: '&copy; <a href="https://www.tomtom.com">TomTom Maps</a>',
+    requiresKey: true
+  },
+  {
     id: 'carto_light',
-    name: 'CARTO Light (Default - No Key Required)',
+    name: 'CARTO Light (Fallback - No Key Required)',
     url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
     attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
     requiresKey: false
   },
   {
     id: 'carto_dark',
-    name: 'CARTO Dark Tactical Mode (No Key Required)',
+    name: 'CARTO Dark Tactical Mode (Fallback - No Key Required)',
     url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
     attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
     requiresKey: false
   },
   {
     id: 'osm_standard',
-    name: 'OpenStreetMap Standard (No Key Required)',
+    name: 'OpenStreetMap Standard (Fallback - No Key Required)',
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     requiresKey: false
@@ -64,13 +85,6 @@ const MAP_PROVIDERS = [
     id: 'mapbox_streets',
     name: 'Mapbox Streets (API Key Required)',
     url: 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={key}',
-    attribution: '&copy; <a href="https://www.mapbox.com/">Mapbox</a>',
-    requiresKey: true
-  },
-  {
-    id: 'mapbox_satellite',
-    name: 'Mapbox Satellite High-Res (API Key Required)',
-    url: 'https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token={key}',
     attribution: '&copy; <a href="https://www.mapbox.com/">Mapbox</a>',
     requiresKey: true
   },
@@ -171,9 +185,9 @@ export const DisasterMapPage = () => {
   const [showCitizenOnly, setShowCitizenOnly] = useState(false);
   const [severityFilter, setSeverityFilter] = useState('All'); // 'All', 'Critical', 'High', 'Medium', 'Low'
 
-  // Map API Key & Provider Configuration State
+  // Map API Key & Provider Configuration State (TomTom Primary)
   const [mapApiKey, setMapApiKey] = useState(() => localStorage.getItem('resq_map_api_key') || '');
-  const [mapProvider, setMapProvider] = useState(() => localStorage.getItem('resq_map_provider') || 'carto_light');
+  const [mapProvider, setMapProvider] = useState(() => localStorage.getItem('resq_map_provider') || 'tomtom_main');
   const [customTileUrl, setCustomTileUrl] = useState(() => localStorage.getItem('resq_custom_tile_url') || '');
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [keySavedNotice, setKeySavedNotice] = useState(false);
@@ -264,12 +278,16 @@ export const DisasterMapPage = () => {
   const getActiveTileUrl = () => {
     const selectedProvider = MAP_PROVIDERS.find(p => p.id === mapProvider) || MAP_PROVIDERS[0];
     if (selectedProvider.id === 'custom') {
-      return customTileUrl || MAP_PROVIDERS[0].url;
+      return customTileUrl || MAP_PROVIDERS[3].url;
     }
     let url = selectedProvider.url;
     if (selectedProvider.requiresKey) {
-      const activeKey = mapApiKey || import.meta.env.VITE_MAP_API_KEY || 'demo_key';
-      url = url.replace('{key}', activeKey);
+      const activeKey = mapApiKey || import.meta.env.VITE_TOMTOM_API_KEY || import.meta.env.VITE_MAP_API_KEY;
+      if (!activeKey && selectedProvider.id.startsWith('tomtom')) {
+        // Fallback seamlessly to free open tile map if TomTom API key is not entered yet
+        return 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+      }
+      url = url.replace('{key}', activeKey || 'demo_key');
     }
     return url;
   };
