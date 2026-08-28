@@ -107,6 +107,15 @@ export const AreasPage = () => {
     }
   };
 
+  const handleClearAll = async () => {
+    try {
+      await api.clearAllAreas();
+      fetchData();
+    } catch (err) {
+      console.error('Error clearing all areas:', err.message);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -115,9 +124,16 @@ export const AreasPage = () => {
           <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Affected Locations & Demand Matrix</h2>
           <p className="text-xs text-slate-500">Real-time population assessment, resource requirements, and dynamic priority scores</p>
         </div>
-        <button onClick={handleOpenAdd} className="btn-primary">
-          <Plus className="w-4 h-4" /> Add Affected Location
-        </button>
+        <div className="flex items-center gap-2">
+          {areas.length > 0 && (
+            <button onClick={handleClearAll} className="btn-secondary text-rose-600 hover:bg-rose-50 border-rose-200 cursor-pointer">
+              <Trash2 className="w-4 h-4 text-rose-600" /> Clear All Areas
+            </button>
+          )}
+          <button onClick={handleOpenAdd} className="btn-primary cursor-pointer">
+            <Plus className="w-4 h-4" /> Add Affected Location
+          </button>
+        </div>
       </div>
 
       {/* Main Table matching prompt requirements exactly */}

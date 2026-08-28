@@ -32,6 +32,8 @@ export const api = {
   createArea: (data) => request('/api/areas', { method: 'POST', body: JSON.stringify(data) }),
   updateArea: (id, data) => request(`/api/areas/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteArea: (id) => request(`/api/areas/${id}`, { method: 'DELETE' }),
+  clearAllAreas: () => request('/api/areas/all', { method: 'DELETE' }),
+  clearAllDisasterReports: () => request('/api/disaster-reports/all', { method: 'DELETE' }),
 
   // Resources
   getResources: () => request('/api/resources'),

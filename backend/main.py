@@ -189,6 +189,11 @@ def update_affected_area(area_id: str, area: AreaSchema):
             return {"status": "success", "data": updated}
     raise HTTPException(status_code=404, detail="Area not found")
 
+@app.delete("/api/areas/all")
+def clear_all_affected_areas():
+    db_store.affected_areas = []
+    return {"status": "success", "message": "All affected areas cleared"}
+
 @app.delete("/api/areas/{area_id}")
 def delete_affected_area(area_id: str):
     db_store.affected_areas = [a for a in db_store.affected_areas if a["id"] != area_id]

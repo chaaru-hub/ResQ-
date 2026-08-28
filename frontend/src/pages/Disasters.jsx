@@ -120,6 +120,24 @@ export const DisastersPage = () => {
     }
   };
 
+  const handleClearAreas = async () => {
+    try {
+      await api.clearAllAreas();
+      loadData();
+    } catch (err) {
+      console.error('Failed to clear areas:', err.message);
+    }
+  };
+
+  const handleClearIncidents = async () => {
+    try {
+      await api.clearAllDisasterReports();
+      loadData();
+    } catch (err) {
+      console.error('Failed to clear incidents:', err.message);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header Controls */}
@@ -133,31 +151,55 @@ export const DisastersPage = () => {
         </button>
       </div>
 
-      {/* Sub-Navigation Tabs */}
-      <div className="flex gap-2 border-b border-slate-200 pb-2">
-        <button
-          onClick={() => setActiveTab('Incidents')}
-          className={`px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-2 cursor-pointer ${
-            activeTab === 'Incidents' 
-              ? 'bg-slate-900 text-white shadow-xs' 
-              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-          }`}
-        >
-          <Flame className="w-4 h-4 text-orange-500" />
-          <span>Active Emergency Incidents ({reports.length})</span>
-        </button>
+      {/* Sub-Navigation Tabs & Clear Actions */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveTab('Incidents')}
+            className={`px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'Incidents' 
+                ? 'bg-slate-900 text-white shadow-xs' 
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <Flame className="w-4 h-4 text-orange-500" />
+            <span>Active Emergency Incidents ({reports.length})</span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab('Affected Areas')}
-          className={`px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-2 cursor-pointer ${
-            activeTab === 'Affected Areas' 
-              ? 'bg-slate-900 text-white shadow-xs' 
-              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-          }`}
-        >
-          <MapPin className="w-4 h-4 text-blue-500" />
-          <span>Affected Areas Telemetry ({areas.length})</span>
-        </button>
+          <button
+            onClick={() => setActiveTab('Affected Areas')}
+            className={`px-4 py-2 text-xs font-bold rounded-md transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'Affected Areas' 
+                ? 'bg-slate-900 text-white shadow-xs' 
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <MapPin className="w-4 h-4 text-blue-500" />
+            <span>Affected Areas Telemetry ({areas.length})</span>
+          </button>
+        </div>
+
+        <div>
+          {activeTab === 'Incidents' && reports.length > 0 && (
+            <button 
+              onClick={handleClearIncidents}
+              className="px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 text-xs font-bold rounded-md transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+              title="Clear all emergency incident records"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-600" /> Clear All Incidents
+            </button>
+          )}
+
+          {activeTab === 'Affected Areas' && areas.length > 0 && (
+            <button 
+              onClick={handleClearAreas}
+              className="px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 text-xs font-bold rounded-md transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+              title="Clear all affected area telemetry records"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-600" /> Clear All Telemetry Areas
+            </button>
+          )}
+        </div>
       </div>
 
       {/* INCIDENTS TABLE VIEW */}

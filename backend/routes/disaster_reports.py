@@ -20,6 +20,12 @@ from services.optimizer import run_optimization
 router = APIRouter(prefix="/api/disaster-reports", tags=["Disaster Reports"])
 
 
+@router.delete("/all")
+def clear_all_disaster_reports():
+    """Clears all disaster incident reports from the database."""
+    db_store.disaster_reports = []
+    return {"status": "success", "message": "All disaster reports cleared"}
+
 @router.get("")
 def get_disaster_reports(
     status: Optional[str] = Query(None),
