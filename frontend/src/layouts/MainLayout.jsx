@@ -25,7 +25,9 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   MessageSquare,
-  CloudSun
+  CloudSun,
+  Globe,
+  ExternalLink
 } from 'lucide-react';
 
 export const MainLayout = ({ activeTab, setActiveTab, children }) => {
@@ -38,7 +40,6 @@ export const MainLayout = ({ activeTab, setActiveTab, children }) => {
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'citizen-reports', label: 'Citizen Reports', icon: ShieldAlert, highlight: true },
     { id: 'weather', label: 'OpenWeather Insights', icon: CloudSun, highlight: true },
-    { id: 'sms', label: 'SMS Disaster Reports', icon: MessageSquare, highlight: true },
     { id: 'disasters', label: 'Disaster Management', icon: Flame },
     { id: 'resources', label: 'Resource Management', icon: Boxes },
     { id: 'allocation', label: 'Allocation Center', icon: Cpu, highlight: true },
@@ -50,8 +51,8 @@ export const MainLayout = ({ activeTab, setActiveTab, children }) => {
   const pageTitleMap = {
     dashboard: 'Disaster Command Center Dashboard',
     'citizen-reports': 'Citizen Emergency Ingestion & Priority Management',
+    citizen: 'Public Emergency Citizen Portal',
     weather: 'OpenWeather Emergency Intelligence Center',
-    sms: 'SMS Disaster Ingestion & Emergency Reporting Hub',
     disasters: 'Disaster Incident & Event Management',
     resources: 'Emergency Resource & Inventory Management',
     allocation: 'Smart Resource Allocation & Priority Optimization',
@@ -129,7 +130,15 @@ export const MainLayout = ({ activeTab, setActiveTab, children }) => {
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => {
+                  if (item.id === 'citizen') {
+                    if (typeof window !== 'undefined') window.history.pushState({}, '', '?tab=citizen');
+                    setActiveTab('citizen');
+                  } else {
+                    if (typeof window !== 'undefined') window.history.pushState({}, '', '/');
+                    setActiveTab(item.id);
+                  }
+                }}
                 title={!sidebarOpen ? item.label : undefined}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-colors whitespace-nowrap overflow-hidden ${
                   isActive 
@@ -141,6 +150,9 @@ export const MainLayout = ({ activeTab, setActiveTab, children }) => {
                   <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-blue-400' : 'text-slate-400'}`} />
                   {sidebarOpen && <span className="truncate">{item.label}</span>}
                 </div>
+                {sidebarOpen && item.id === 'citizen' && (
+                  <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[9px] px-1.5 py-0.5 rounded font-bold flex-shrink-0 uppercase">Public</span>
+                )}
                 {sidebarOpen && item.id === 'alerts' && (
                   <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold flex-shrink-0">4</span>
                 )}
@@ -249,6 +261,20 @@ export const MainLayout = ({ activeTab, setActiveTab, children }) => {
               </span>
               <span className="hidden sm:inline">LIVE RESPONSE</span>
             </div>
+
+            {/* Switch to User Portal Header Button */}
+            <button
+              onClick={() => {
+                if (typeof window !== 'undefined') window.history.pushState({}, '', '?tab=citizen');
+                setActiveTab('citizen');
+              }}
+              className="flex items-center gap-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-extrabold shadow-sm transition-all hover:scale-105 cursor-pointer border border-cyan-400/30"
+              title="Open Public User & Citizen Emergency Portal"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span>User Portal</span>
+              <ExternalLink className="w-3 h-3 opacity-80" />
+            </button>
 
             {/* Notification Bell */}
             <div className="relative">

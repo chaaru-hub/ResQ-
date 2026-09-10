@@ -74,7 +74,7 @@ const CHENNAI_LOCATIONS = [
   { id: 'perambur', name: 'Perambur Loco Works & Flyover Sector, Chennai', shortName: 'Perambur', lat: 13.1118, lng: 80.2315 }
 ];
 
-export const CitizenPortal = () => {
+export const CitizenPortal = ({ onBackToAdmin }) => {
   // Form Fields State
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -192,34 +192,25 @@ export const CitizenPortal = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError('');
-
-    if (!name.trim()) {
-      setSubmitError('Please provide your name.');
-      return;
-    }
-    if (!phone.trim()) {
-      setSubmitError('Please provide a contact phone number.');
-      return;
-    }
-    if (!description.trim()) {
-      setSubmitError('Please describe the emergency situation.');
-      return;
-    }
-
     setSubmitting(true);
+
+    const finalName = name.trim() || 'Citizen (SOS Signal)';
+    const finalPhone = phone.trim() || '108 / Emergency Hotline';
+    const finalLocation = locationName.trim() || CHENNAI_LOCATIONS[0].name;
+    const finalDescription = description.trim() || `Urgent ${disasterType} emergency reported at ${finalLocation}. Immediate rescue support requested by citizen.`;
 
     try {
       const payload = {
-        name: name.trim(),
-        phone: phone.trim(),
+        name: finalName,
+        phone: finalPhone,
         disaster_type: disasterType,
         severity: severity,
         people_affected: parseInt(peopleAffected, 10) || 1,
         resources_needed: selectedResources,
-        description: description.trim(),
-        location: locationName.trim() || undefined,
-        latitude: latitude ? parseFloat(latitude) : undefined,
-        longitude: longitude ? parseFloat(longitude) : undefined,
+        description: finalDescription,
+        location: finalLocation,
+        latitude: latitude ? parseFloat(latitude) : CHENNAI_LOCATIONS[0].lat,
+        longitude: longitude ? parseFloat(longitude) : CHENNAI_LOCATIONS[0].lng,
         image_url: imagePreview || undefined
       };
 
@@ -294,12 +285,18 @@ export const CitizenPortal = () => {
             </div>
           </div>
 
-          <a
-            href="/"
-            className="text-xs font-bold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors flex items-center gap-1.5"
+          <button
+            onClick={() => {
+              if (onBackToAdmin) {
+                onBackToAdmin();
+              } else {
+                window.location.href = '/';
+              }
+            }}
+            className="text-xs font-bold text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 transition-colors flex items-center gap-1.5 cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Admin
-          </a>
+          </button>
         </div>
       </header>
 
@@ -641,15 +638,15 @@ export const CitizenPortal = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-                      Emergency Situation Description <span className="text-red-500">*</span>
+                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                      <span>Emergency Situation Description</span>
+                      <span className="text-[10px] text-cyan-400 font-normal lowercase">(Optional - Auto-sent to Admin if blank)</span>
                     </label>
                     <textarea
                       rows={4}
-                      required
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Describe what happened, how many are injured/trapped, current hazards, and urgent help needed..."
+                      placeholder="Describe what happened, how many are injured/trapped, current hazards, and urgent help needed... (Or leave blank to auto-send emergency signal)"
                       className="w-full bg-slate-950 border border-slate-800 focus:border-red-500 focus:ring-1 focus:ring-red-500 text-white rounded-xl p-3 text-xs font-medium placeholder-slate-600 leading-relaxed"
                     />
                   </div>

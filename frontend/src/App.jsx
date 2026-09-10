@@ -30,9 +30,16 @@ const MainApp = () => {
     return 'dashboard';
   });
 
+  const handleBackToAdmin = () => {
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', '/');
+    }
+    setActiveTab('dashboard');
+  };
+
   // Citizen Portal is publicly accessible without requiring Admin login
   if (activeTab === 'citizen' || (typeof window !== 'undefined' && (window.location.pathname.toLowerCase().includes('citizen') || window.location.search.toLowerCase().includes('citizen')))) {
-    return <CitizenPortal />;
+    return <CitizenPortal onBackToAdmin={handleBackToAdmin} />;
   }
 
   if (!user) {
