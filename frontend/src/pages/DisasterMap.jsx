@@ -117,9 +117,12 @@ const isCitizenReport = (rpt) => {
   if (!rpt) return false;
   return (
     rpt.source === 'Citizen Portal' ||
-    (rpt.source && rpt.source.toLowerCase().includes('citizen')) ||
+    (rpt.source && String(rpt.source).toLowerCase().includes('citizen')) ||
     (rpt.id && String(rpt.id).startsWith('rpt_cit_')) ||
-    rpt.is_citizen_report === true
+    (rpt.incident_id && String(rpt.incident_id).startsWith('rpt_cit_')) ||
+    rpt.is_citizen_report === true ||
+    Boolean(rpt.reporter_name) ||
+    Boolean(rpt.reporter_phone)
   );
 };
 
@@ -555,6 +558,105 @@ const DEFAULT_SAFE_LOCATIONS = [
   }
 ];
 
+const DEFAULT_AREAS = [
+  {
+    id: 'a1',
+    disaster_id: 'd101',
+    area_name: 'Area A - Coastal Sector 1',
+    population: 8500,
+    severity: 'Critical',
+    medical_cases: 280,
+    vulnerable_population: 2100,
+    latitude: 13.0827,
+    longitude: 80.2707,
+    food_required: 2200,
+    water_required: 3500,
+    medicine_required: 450,
+    priority_score: 94.2,
+    status: 'Critical'
+  },
+  {
+    id: 'a2',
+    disaster_id: 'd101',
+    area_name: 'Area B - North Harbor',
+    population: 6200,
+    severity: 'Critical',
+    medical_cases: 190,
+    vulnerable_population: 1400,
+    latitude: 13.1200,
+    longitude: 80.2900,
+    food_required: 1800,
+    water_required: 2600,
+    medicine_required: 320,
+    priority_score: 87.5,
+    status: 'Critical'
+  },
+  {
+    id: 'a3',
+    disaster_id: 'd102',
+    area_name: 'Area C - Riverbed Township',
+    population: 9400,
+    severity: 'High',
+    medical_cases: 140,
+    vulnerable_population: 1800,
+    latitude: 13.0400,
+    longitude: 80.2100,
+    food_required: 2500,
+    water_required: 4000,
+    medicine_required: 280,
+    priority_score: 78.4,
+    status: 'High'
+  },
+  {
+    id: 'a4',
+    disaster_id: 'd102',
+    area_name: 'Area D - South Delta Colony',
+    population: 4800,
+    severity: 'High',
+    medical_cases: 95,
+    vulnerable_population: 900,
+    latitude: 12.9800,
+    longitude: 80.2400,
+    food_required: 1200,
+    water_required: 2000,
+    medicine_required: 160,
+    priority_score: 71.1,
+    status: 'High'
+  },
+  {
+    id: 'a5',
+    disaster_id: 'd101',
+    area_name: 'Area E - Fisherman Island',
+    population: 3100,
+    severity: 'Critical',
+    medical_cases: 125,
+    vulnerable_population: 750,
+    latitude: 13.1500,
+    longitude: 80.3100,
+    food_required: 1100,
+    water_required: 1600,
+    medicine_required: 210,
+    priority_score: 91.0,
+    status: 'Critical'
+  },
+  {
+    id: 'a6',
+    disaster_id: 'd103',
+    area_name: 'Area F - Western Slums Sector',
+    population: 11200,
+    severity: 'Medium',
+    medical_cases: 85,
+    vulnerable_population: 3100,
+    latitude: 12.9200,
+    longitude: 80.1200,
+    food_required: 3100,
+    water_required: 5200,
+    medicine_required: 190,
+    priority_score: 64.5,
+    status: 'Medium'
+  }
+];
+
 export const DisasterMapPage = () => {
   const mapWrapperRef = useRef(null);
 
@@ -576,6 +678,7 @@ export const DisasterMapPage = () => {
   const [showWeatherOverlay, setShowWeatherOverlay] = useState(true);
   const [showRoutes, setShowRoutes] = useState(true);
   const [showSafeLocations, setShowSafeLocations] = useState(true);
+  const [showCitizenSos, setShowCitizenSos] = useState(true);
   const [showCitizenOnly, setShowCitizenOnly] = useState(false);
   const [showVehicles, setShowVehicles] = useState(true);
   const [severityFilter, setSeverityFilter] = useState('All'); // 'All', 'Critical', 'High', 'Medium', 'Low'
@@ -602,20 +705,20 @@ export const DisasterMapPage = () => {
 
   // Calculate spatial offset for overlapping markers in the same location/region
   const getReportCoordinates = (rpt, allReports) => {
-    const baseLat = rpt.latitude || 12.9229;
-    const baseLng = rpt.longitude || 80.1275;
+    const baseLat = parseFloat(rpt.latitude) || 12.9229;
+    const baseLng = parseFloat(rpt.longitude) || 80.1275;
 
     // Find all reports matching this exact base coordinate
     const overlapping = (allReports || []).filter(r => 
-      Math.abs((r.latitude || 12.9229) - baseLat) < 0.0005 &&
-      Math.abs((r.longitude || 80.1275) - baseLng) < 0.0005
+      Math.abs((parseFloat(r.latitude) || 12.9229) - baseLat) < 0.0005 &&
+      Math.abs((parseFloat(r.longitude) || 80.1275) - baseLng) < 0.0005
     );
 
     if (overlapping.length <= 1) {
       return [baseLat, baseLng];
     }
 
-    const index = overlapping.findIndex(r => r.id === rpt.id);
+    const index = overlapping.findIndex(r => (r.id && r.id === rpt.id) || (r.incident_id && r.incident_id === rpt.incident_id));
     if (index <= 0) return [baseLat, baseLng];
 
     // Offset in a small circle (~350m radius) so all markers render distinctly side-by-side
@@ -733,20 +836,6 @@ export const DisasterMapPage = () => {
     setLocationCategoryFilter(cat);
     setShowLocationDrawer(true);
     setIsLocationDrawerMinimized(false);
-
-    if (cat === 'Hospital' || cat === 'Relief Shelter' || cat === 'Fire Station') {
-      setShowSafeLocations(true);
-    } else if (cat === 'Threat Zone') {
-      setShowDangerZones(true);
-    } else if (cat === 'Citizen SOS') {
-      setShowCitizenOnly(false);
-    } else if (cat === 'Vehicle') {
-      setShowVehicles(true);
-    } else if (cat === 'All') {
-      setShowSafeLocations(true);
-      setShowDangerZones(true);
-      setShowVehicles(true);
-    }
   };
 
   // Handle selecting an item from the Location Options Drawer
@@ -777,15 +866,15 @@ export const DisasterMapPage = () => {
     if (showLoading) setLoading(true);
     try {
       const [areasRes, vehRes, rptRes, weatherRes, safeLocsRes] = await Promise.all([
-        api.getAreas(),
-        api.getVehicles(),
-        api.getDisasterReports(),
+        api.getAreas().catch(() => null),
+        api.getVehicles().catch(() => null),
+        api.getDisasterReports().catch(() => null),
         api.getWeatherOverview().catch(() => null),
         api.getSafeLocations().catch(() => null)
       ]);
-      setAreas(areasRes.data || []);
-      setVehicles(vehRes.data || []);
-      setReports(rptRes.data || []);
+      setAreas(areasRes?.data && areasRes.data.length > 0 ? areasRes.data : DEFAULT_AREAS);
+      setVehicles(vehRes?.data || []);
+      setReports(rptRes?.data || []);
       setSafeLocations(safeLocsRes?.data && safeLocsRes.data.length > 0 ? safeLocsRes.data : DEFAULT_SAFE_LOCATIONS);
       setWeatherOverview(weatherRes);
       
@@ -1102,21 +1191,48 @@ export const DisasterMapPage = () => {
             </span>
 
             <button
+              onClick={() => setShowSafeLocations(!showSafeLocations)}
+              className={`px-2.5 py-1 rounded-md border text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                showSafeLocations ? 'bg-emerald-50 border-emerald-300 text-emerald-800 shadow-xs' : 'bg-slate-50 border-slate-200 text-slate-400'
+              }`}
+            >
+              <span>🏥</span> Safe Facilities
+            </button>
+
+            <button
               onClick={() => setShowDangerZones(!showDangerZones)}
               className={`px-2.5 py-1 rounded-md border text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 showDangerZones ? 'bg-rose-50 border-rose-300 text-rose-800 shadow-xs' : 'bg-slate-50 border-slate-200 text-slate-400'
               }`}
             >
-              <ShieldAlert className="w-3.5 h-3.5 text-rose-600" /> Danger Radius Rings
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-600" /> Critical Danger Areas
+            </button>
+
+            <button
+              onClick={() => setShowCitizenSos(!showCitizenSos)}
+              className={`px-2.5 py-1 rounded-md border text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                showCitizenSos ? 'bg-purple-50 border-purple-300 text-purple-800 shadow-xs' : 'bg-slate-50 border-slate-200 text-slate-400'
+              }`}
+            >
+              <span>👥</span> Citizen SOS Signals
+            </button>
+
+            <button
+              onClick={() => setShowVehicles(!showVehicles)}
+              className={`px-2.5 py-1 rounded-md border text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                showVehicles ? 'bg-blue-50 border-blue-300 text-blue-800 shadow-xs' : 'bg-slate-50 border-slate-200 text-slate-400'
+              }`}
+            >
+              <span>🚚</span> Rescue Fleet
             </button>
 
             <button
               onClick={() => setShowWeatherOverlay(!showWeatherOverlay)}
               className={`px-2.5 py-1 rounded-md border text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                showWeatherOverlay ? 'bg-blue-50 border-blue-300 text-blue-800 shadow-xs' : 'bg-slate-50 border-slate-200 text-slate-400'
+                showWeatherOverlay ? 'bg-cyan-50 border-cyan-300 text-cyan-800 shadow-xs' : 'bg-slate-50 border-slate-200 text-slate-400'
               }`}
             >
-              <CloudRain className="w-3.5 h-3.5 text-blue-600" /> Weather Hazard Details
+              <CloudRain className="w-3.5 h-3.5 text-cyan-600" /> Weather Hazard Details
             </button>
 
             <button
@@ -1320,6 +1436,7 @@ export const DisasterMapPage = () => {
           {showSafeLocations && safeLocations
             .filter((loc) => {
               if (locationCategoryFilter === 'All') return true;
+              if (locationCategoryFilter === 'Threat Zone' || locationCategoryFilter === 'Citizen SOS' || locationCategoryFilter === 'Vehicle') return true;
               return loc.facility_type === locationCategoryFilter;
             })
             .map((loc) => {
@@ -1360,7 +1477,7 @@ export const DisasterMapPage = () => {
           })}
 
           {/* RESCUE FLEET & VEHICLE MARKERS */}
-          {showVehicles && (locationCategoryFilter === 'All' || locationCategoryFilter === 'Vehicle') && vehicles.map((veh) => {
+          {showVehicles && vehicles.map((veh) => {
             const [lat, lng] = getVehicleCoordinates(veh);
             return (
               <Marker
@@ -1424,7 +1541,7 @@ export const DisasterMapPage = () => {
           )}
 
           {/* Render Threat Radius Circles around Affected Areas */}
-          {showDangerZones && (locationCategoryFilter === 'All' || locationCategoryFilter === 'Threat Zone') && filteredAreas.map((area) => {
+          {showDangerZones && filteredAreas.map((area) => {
             const lat = area.latitude || 13.0827;
             const lon = area.longitude || 80.2707;
             const isCritical = area.severity === 'Critical' || area.priority_score >= 81;
@@ -1450,7 +1567,7 @@ export const DisasterMapPage = () => {
           })}
 
           {/* Area Circle Markers with Detailed Danger & Weather Popups */}
-          {!showCitizenOnly && (locationCategoryFilter === 'All' || locationCategoryFilter === 'Threat Zone') && filteredAreas.map((area) => {
+          {showDangerZones && filteredAreas.map((area) => {
             const color = getMarkerColor(area.severity, area.priority_score);
             const wData = weatherMap[area.id];
 
@@ -1540,7 +1657,7 @@ export const DisasterMapPage = () => {
           })}
 
           {/* DISASTER REPORTS (CITIZEN SPECIAL MARKERS VS REGULAR CIRCLE MARKERS) */}
-          {(locationCategoryFilter === 'All' || locationCategoryFilter === 'Citizen SOS') && filteredReports.map((rpt) => {
+          {showCitizenSos && filteredReports.map((rpt) => {
             const [lat, lng] = getReportCoordinates(rpt, filteredReports);
             const citizenFlag = isCitizenReport(rpt);
 

@@ -44,9 +44,12 @@
   z-index: 10;
 }
 
-.custom-citizen-leaflet-icon {
+.custom-citizen-leaflet-icon,
+.custom-safe-location-icon,
+.custom-vehicle-icon {
   background: transparent !important;
   border: none !important;
+  box-shadow: none !important;
 }
 
 @layer components {

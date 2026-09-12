@@ -17,6 +17,7 @@ from services.resource_allocator import recommend_resources_greedy
 from services.route_optimizer import calculate_dijkstra_route
 from services.optimizer import run_optimization
 from services.safe_locations_finder import find_nearest_safe_locations
+from services.websocket_manager import ws_manager
 
 router = APIRouter(prefix="/api/citizen", tags=["Citizen Portal Reports"])
 
@@ -137,6 +138,7 @@ async def submit_citizen_report(report_data: CitizenReportSchema):
         "priority": p_level.upper(),
         "status": "Pending",
         "source": "Citizen Portal",
+        "is_citizen_report": True,
         "created_at": now_iso,
         "updated_at": now_iso,
         "priority_breakdown": breakdown,

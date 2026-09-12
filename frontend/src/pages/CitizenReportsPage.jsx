@@ -107,7 +107,14 @@ export const CitizenReportsPage = ({ setActiveTab }) => {
   };
 
   // Filter Citizen Reports specifically or prioritize Citizen Portal reports
-  const citizenReports = reports.filter((r) => r.source === 'Citizen Portal' || r.reporter_name || r.image_url);
+  const citizenReports = reports.filter((r) => 
+    r.source === 'Citizen Portal' || 
+    (r.source && r.source.toLowerCase().includes('citizen')) ||
+    r.is_citizen_report === true ||
+    (r.id && String(r.id).startsWith('rpt_cit_')) ||
+    r.reporter_name || 
+    r.image_url
+  );
 
   // Search filter
   const filteredReports = citizenReports.filter((r) => {
