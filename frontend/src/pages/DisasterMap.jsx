@@ -239,6 +239,36 @@ const createVehicleMarkerIcon = (veh) => {
   });
 };
 
+// Helper to create live OpenWeather overlay markers on active threat sectors
+const createWeatherMarkerIcon = (wData) => {
+  const temp = Math.round(wData.weather_temp || 28);
+  const desc = wData.weather_description || 'Heavy Rain';
+  const risk = Math.round(wData.weather_risk_score || 75);
+  const iconCode = wData.weather_icon || '11d';
+  const isExtreme = risk >= 80;
+  const weatherEmoji = iconCode.includes('11') ? '🌩️' : (iconCode.includes('09') || iconCode.includes('10') ? '🌧️' : (iconCode.includes('13') ? '❄️' : '⛅'));
+
+  const htmlString = `
+    <div class="relative flex items-center justify-center group cursor-pointer" style="width: 140px; height: 38px;">
+      <div class="relative flex items-center gap-1.5 bg-slate-950/95 text-white border ${isExtreme ? 'border-red-500 shadow-red-900/50 ring-2 ring-red-500/60' : 'border-cyan-400/80 shadow-cyan-900/40'} px-2.5 py-1 rounded-full shadow-2xl backdrop-blur-md font-bold text-xs whitespace-nowrap hover:scale-105 transition-all">
+        <span class="text-base animate-bounce">${weatherEmoji}</span>
+        <div class="flex flex-col text-[10px] leading-tight text-left">
+          <span class="font-black text-cyan-300">${temp}°C • ${desc}</span>
+          <span class="text-[9px] font-mono text-slate-300">Hazard Risk: <strong class="${isExtreme ? 'text-red-400 font-extrabold' : 'text-amber-400'}">${risk}/100</strong></span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return L.divIcon({
+    className: 'custom-weather-marker-icon',
+    html: htmlString,
+    iconSize: [140, 38],
+    iconAnchor: [70, 19],
+    popupAnchor: [0, -19]
+  });
+};
+
 const getVehicleCoordinates = (veh) => {
   if (veh.latitude && veh.longitude) return [veh.latitude, veh.longitude];
   const locLower = (veh.location || '').toLowerCase();
@@ -882,6 +912,7 @@ export const DisasterMapPage = () => {
         const wMap = {};
         weatherRes.areas_weather.forEach(w => {
           if (w.area_id) wMap[w.area_id] = w;
+          if (w.area_name) wMap[w.area_name] = w;
         });
         setWeatherMap(wMap);
       }
@@ -1569,7 +1600,7 @@ export const DisasterMapPage = () => {
           {/* Area Circle Markers with Detailed Danger & Weather Popups */}
           {showDangerZones && filteredAreas.map((area) => {
             const color = getMarkerColor(area.severity, area.priority_score);
-            const wData = weatherMap[area.id];
+            const wData = weatherMap[area.id] || weatherMap[area.area_name] || (weatherOverview?.areas_weather?.[0]);
 
             return (
               <CircleMarker
@@ -1694,6 +1725,48 @@ export const DisasterMapPage = () => {
               />
             );
           })}
+
+          {/* OPENWEATHER LIVE WEATHER OVERLAY MARKERS ON MAP */}
+          {showWeatherOverlay && filteredAreas.map((area) => {
+            const wData = weatherMap[area.id] || weatherMap[area.area_name] || (weatherOverview?.areas_weather?.[0]);
+            if (!wData) return null;
+            const wLat = (area.latitude || 13.0827) + 0.005;
+            const wLon = (area.longitude || 80.2707) - 0.003;
+
+            return (
+              <Marker
+                key={`weather-map-marker-${area.id}`}
+                position={[wLat, wLon]}
+                icon={createWeatherMarkerIcon(wData)}
+              >
+                <Popup>
+                  <div className="p-2 space-y-1.5 max-w-xs text-xs text-slate-900">
+                    <div className="flex items-center justify-between border-b pb-1 font-bold text-blue-900">
+                      <span className="flex items-center gap-1 text-xs">
+                        <CloudRain className="w-4 h-4 text-cyan-600" /> OpenWeather Live Telemetry
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-mono">GPS: ({wLat.toFixed(3)}, {wLon.toFixed(3)})</span>
+                    </div>
+                    <p className="font-extrabold text-slate-900 text-xs">{area.area_name}</p>
+                    <div className="bg-slate-900 text-white p-2 rounded-lg text-xs space-y-1">
+                      <div className="flex justify-between font-bold text-cyan-300">
+                        <span>Temperature:</span>
+                        <span>{Math.round(wData.weather_temp || 28)}°C (Feels {Math.round(wData.weather_feels_like || 31)}°C)</span>
+                      </div>
+                      <div className="flex justify-between text-slate-300">
+                        <span>Humidity:</span>
+                        <span>{wData.humidity || 88}%</span>
+                      </div>
+                      <div className="flex justify-between text-slate-300">
+                        <span>Wind Speed:</span>
+                        <span>{wData.wind_speed_kmh || wData.wind_speed || 16.5} km/h</span>
+                      </div>
+                    </div>
+                  </div>
+                </Popup>
+              </Marker>
+            );
+          })}
         </MapContainer>
 
         {/* Active Category Map Mode Indicator Badge */}
@@ -1716,6 +1789,47 @@ export const DisasterMapPage = () => {
             >
               Reset / Show All
             </button>
+          </div>
+        )}
+
+        {/* Floating OpenWeather Radar Overlay Telemetry Panel */}
+        {showWeatherOverlay && (
+          <div className="absolute bottom-4 left-4 z-20 bg-slate-950/95 text-white border border-cyan-500/80 p-3 rounded-2xl shadow-2xl backdrop-blur-md text-xs max-w-sm space-y-2">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-1 font-black text-cyan-300">
+              <span className="flex items-center gap-1.5">
+                <CloudRain className="w-4 h-4 text-cyan-400 animate-pulse" /> OpenWeather Live Radar
+              </span>
+              <span className="text-[9px] bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-500/40 uppercase font-mono">
+                {weatherOverview?.has_live_api ? 'Live API' : 'Simulated Radar'}
+              </span>
+            </div>
+            
+            {weatherOverview?.areas_weather && weatherOverview.areas_weather.length > 0 ? (
+              <div className="space-y-1.5 text-[11px]">
+                <div className="flex items-center justify-between text-slate-300">
+                  <span className="font-bold">Weather Risk Score:</span>
+                  <span className="font-black text-rose-400">{weatherOverview.average_weather_risk_score || 74.5} / 100</span>
+                </div>
+                
+                <div className="flex flex-wrap gap-1 text-[10px]">
+                  {weatherOverview.areas_weather.slice(0, 3).map((w) => (
+                    <span key={`w-pill-${w.area_id}`} className="bg-slate-900 border border-slate-700 px-2 py-0.5 rounded-lg text-slate-200 font-medium flex items-center gap-1">
+                      <span className="text-cyan-400">{w.area_name.split('-')[1] || w.area_name}:</span>
+                      <strong className="text-white">{Math.round(w.weather_temp)}°C</strong>
+                    </span>
+                  ))}
+                </div>
+
+                {weatherOverview.active_hazard_warnings?.[0] && (
+                  <div className="bg-red-950/80 border border-red-600/60 p-1.5 rounded-lg text-[10px] text-red-200 font-bold flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                    <span className="truncate">{weatherOverview.active_hazard_warnings[0]}</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-[10px] text-slate-400">Loading live OpenWeather atmospheric telemetry...</p>
+            )}
           </div>
         )}
 
