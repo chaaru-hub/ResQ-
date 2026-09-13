@@ -30,6 +30,7 @@ import {
 const DISASTER_TYPES = [
   { id: 'Flood', label: 'Flood / Inundation', icon: '🌊' },
   { id: 'Fire', label: 'Fire Outbreak', icon: '🔥' },
+  { id: 'Accident', label: 'Accident / Vehicle Crash', icon: '🚗' },
   { id: 'Landslide', label: 'Landslide / Mudslide', icon: '⛰️' },
   { id: 'Cyclone', label: 'Cyclone / Storm', icon: '🌀' },
   { id: 'Earthquake', label: 'Earthquake', icon: '🏚️' },
@@ -403,7 +404,7 @@ export const CitizenPortal = ({ onBackToAdmin }) => {
                     <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
                       Disaster Type <span className="text-red-500">*</span>
                     </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                       {DISASTER_TYPES.map((t) => (
                         <button
                           key={t.id}
